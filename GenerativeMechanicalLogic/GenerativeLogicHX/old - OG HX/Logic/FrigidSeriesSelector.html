@@ -1,0 +1,71 @@
+﻿<div>
+    <div class="seriesSelector"><select></select></div>
+
+    <script class="codeObject">
+
+        function FrigidSeriesSelector() {
+            this.title = "Series Selector";
+            this.seriesSelector = null;
+            this.updater = series => { };
+        }
+
+        FrigidSeriesSelector.prototype = {
+
+            Start: function () {
+                var t = this;
+
+                t.seriesSelector = t.principal.find(".seriesSelector select");
+                t.seriesSelector.on("change", () => {
+                    var pair = t.seriesSelector.find("option:selected").data("series");
+                    t.updater(pair);
+                });
+
+            },
+
+            GetSelected: function () {
+                var t = this;
+                var pair = t.seriesSelector.find("option:selected").data("series");
+                if (pair == null) { return null; }
+                return pair.value;
+            },
+
+            SetSelected: function (seriesName) {
+                var t = this;
+                t.seriesSelector.val(seriesName);
+            },
+
+            SetUpdate: function (updater) {
+                this.updater = series => { updater(series); };
+            },
+
+            Clear: function () {
+                var t = this;
+                t.principal.find(".seriesSelector select").empty();
+            },
+
+            AddSeries: function (series) {
+                var t = this;
+                var option = $("<option></option>");
+                option.html(series.name);
+                option.data("series", series);
+                t.principal.find(".seriesSelector select").append(option);
+            },
+
+            GetSeriesCount: function () {
+                var t = this;
+                return t.seriesSelector.find("option").length;
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidSeriesSelector {
+            display: inline-block;
+            background: rgba(255,255,255,.9);
+        }
+    </style>
+
+</div>

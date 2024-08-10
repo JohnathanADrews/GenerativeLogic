@@ -1,0 +1,127 @@
+﻿
+
+<hx h-proxy="getContent" />
+<hx h-proxy="setContent" />
+<hx h-proxy="show" />
+<hx h-proxy="hide" />
+<hx h-proxy="isFullscreen" />
+<hx h-proxy="showFullscreen" />
+<hx h-proxy="showInTab" />
+
+<div class="tabBodyBuffer" h-handle="tabBuffer"></div>
+
+<script>
+
+    function TabBody() {
+        this.isFullscreenMode = false;
+    }
+
+    TabBody.prototype = {
+
+        start: function (parameters) {
+            var t = this;
+
+            //console.log("TabBody.start - ", parameters, t);
+
+        },
+
+        getContent: function () {
+            return this.tabBuffer.find(" > *");
+        },
+
+        setContent: function (view) {
+            var t = this;
+            //console.log("TabBody.setContent - ", view, t);
+            t.tabBuffer.empty();
+            t.tabBuffer.append(view);
+        },
+
+        show: function () {
+            this.hularion.principal.css("display", "");
+        },
+
+        hide: function () {
+            this.hularion.principal.css("display", "none");
+        },
+
+        isFullscreen: function () {
+            return this.isFullscreenMode;
+        },
+
+        showFullscreen: function () {
+            var t = this;
+            t.isFullscreenMode = true;
+            t.hularion.principal.css("position", "absolute");
+            t.hularion.principal.css("left", "0");
+            t.hularion.principal.css("top", "0");
+            t.hularion.principal.css("width", "100%");
+            t.hularion.principal.css("height", "100%");
+        },
+
+        showInTab: function () {
+            var t = this;
+            t.isFullscreenMode = false;
+            t.hularion.principal.css("position", "");
+            t.hularion.principal.css("left", "");
+            t.hularion.principal.css("top", "");
+            t.hularion.principal.css("width", "");
+            t.hularion.principal.css("height", "");
+        }
+    }
+
+</script>
+<style>
+
+    .this {
+        user-select: none;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        display: inline-block;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+        .this > * {
+            float: left;
+        }
+
+        .this * {
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .this:hover {
+            cursor: pointer;
+        }
+
+        .this *:hover {
+            cursor: pointer;
+        }
+
+    .tabBodyBuffer {
+        margin:0;
+        padding:0;
+        width:100%;
+    }
+
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+    .this{
+        background-color:white;
+    }
+    .textContent {
+        border-color: lightgray;
+    }
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+    .this {
+        background-color: black;
+    }
+    .textContent {
+        border-color: lightgray;
+    }
+</style>
+

@@ -1,0 +1,204 @@
+﻿
+
+
+<hx h-proxy="setContent" />
+
+
+<hx h-presenter="cardarion.control/DraggablePane" h-handle="draggable" />
+
+<div h-clone="contentContainer"  class="mapPaneContent"></div>
+
+<script>
+
+    function MapPaneOld() {
+        this.content = null;
+        this.viewScale = 1;
+    }
+
+    MapPaneOld.prototype = {
+
+        start: function () {
+            var t = this;
+            console.log("MapPaneOld.start - ", t, window);
+
+            t.contentContainer = t.hularion.createClone("contentContainer");
+            t.innerContainer = t.hularion.createClone("contentContainer");
+            t.draggable.proxy.setContent(t.contentContainer.view);
+            t.contentContainer.view.append(t.innerContainer.view);
+
+            t.draggable.view.css("width", "100%");
+            t.viewScale = 1;
+            t.contentContainer.view[0].addEventListener("wheel", event => {
+                t.computeScale(event);
+            });
+            t.draggable.view.css("cursor", "grab");
+            t.draggable.view.css("left", "0");
+            t.draggable.view.css("top", "0");
+            t.draggable.view.css("position", "relative");
+            t.draggable.publisher.DragDelta.subscribe((o, delta) => {
+                var rect = t.draggable.view[0].getBoundingClientRect();
+                var offset = t.hularion.principal.offset();
+                var diff = 0;
+
+                t.computeHorizontalChange(delta);
+                t.computeVerticalChange(delta);
+            });
+
+            t.hularion.window.addEventListener("resize", (event) => {
+                t.computeHorizontalChange({dx:0,dy:0});
+                t.computeVerticalChange({dx:0,dy:0});
+            });
+
+        },
+
+        setContent: function (domElement) {
+            var t = this;
+            t.content = domElement;
+            //t.contentContainer.view.append(domElement);
+            t.innerContainer.view.append(domElement);
+            t.draggable.view.css("display", "none");
+            setTimeout(() => {
+                t.draggable.view.css("display", "inline-block");
+                t.computeHorizontalChange({ dx: 0, dy: 0 });
+                t.computeVerticalChange({ dx: 0, dy: 0 });
+            }, 1);
+        },
+
+        computeHorizontalChange: function (delta) {
+            var t = this;
+
+            var rect = t.draggable.view[0].getBoundingClientRect();
+            var offset = t.hularion.principal.offset();
+            var diff = 0;
+
+            if (t.contentContainer.view.width() < t.draggable.view.width()) {
+                t.contentContainer.view.css("left", (t.draggable.view.width() - t.contentContainer.view.width()) / 2);
+                return;
+            }
+            else {
+                t.contentContainer.view.css("left", 0);
+            }
+            if (t.contentContainer.view.width() > t.hularion.principal.width()) {
+                var xoffset = rect.left + delta.dx - offset.left;
+                diff = rect.left + delta.dx - offset.left;
+                if (diff > 0) {
+                    xoffset -= diff;
+                }
+                else {
+                    diff = rect.left + delta.dx - offset.left + t.contentContainer.view.width() - t.draggable.view.width();
+                    if (t.contentContainer.view.width() < t.draggable.view.width()) {
+                        diff += (t.draggable.view.width() - t.contentContainer.view.width());
+                    }
+                    if (diff < 0) {
+                        xoffset -= diff;
+                    }
+                }
+                t.draggable.view.css("left", xoffset);
+            }
+        },
+
+        computeVerticalChange: function (delta) {
+            var t = this;
+            var rect = t.draggable.view[0].getBoundingClientRect();
+            var offset = t.hularion.principal.offset();
+            var diff = 0;
+
+            if (t.draggable.view.height() < t.hularion.principal.height()) {
+                t.draggable.view.css("top", (t.hularion.principal.height() - t.draggable.view.height()) / 2);
+                return;
+            }
+            else {
+                t.draggable.view[0].top = 0;
+            }
+            if (t.contentContainer.view.height() > t.hularion.principal.height()) {
+                var yoffset = rect.top + delta.dy - offset.top;
+                diff = rect.top + delta.dy - offset.top;
+                if (diff > 0) {
+                    yoffset -= diff;
+                }
+                else {
+                    diff = t.contentContainer.view.height() + t.contentContainer.view.offset().top - offset.top + delta.dy - t.hularion.principal.height();
+                    if (t.contentContainer.view.height() < t.draggable.view.height()) {
+                        diff += (t.draggable.view.height() - t.contentContainer.view.height());
+                    }
+                    if (diff < 0) {
+                        yoffset -= diff;
+                    }
+                }
+                t.draggable.view.css("top", yoffset);
+            }
+        },
+
+        computeScale: function (wheelEvent) {
+
+            var t = this;
+            console.log("MapPane.start wheel- ", wheelEvent);
+            var oldScale = t.viewScale;
+            if (wheelEvent.wheelDelta > 0) {
+                if (t.viewScale > 4) {
+                    return;
+                }
+                t.viewScale += .2;
+                if (t.viewScale > 4) {
+                    t.viewScale = 4;
+                }
+                var contentRect = t.contentContainer.view[0].getBoundingClientRect();
+                //t.innerContainer.view.css("transform", "scale(" + t.viewScale + ")");
+                //t.draggable.view.css("width", (1 / t.viewScale * 100) + "%");
+                //var offset = t.contentContainer.view.offset();
+                //var dragRect = t.draggable.view[0].getBoundingClientRect();
+                //var scaleDiff = (t.viewScale - oldScale);
+                //var dLeft = -1 * scaleDiff * ((contentRect.width / 2) + contentRect.x - wheelEvent.x);
+                //dLeft = -1 * scaleDiff * contentRect.width;
+                //var moveLeft = dLeft + offset.left;
+                ////var moveLeft = scaleDiff * (wheelEvent.x - t.hularion.principal.width());
+                //console.log("MapPane.start wheel scaleDiff - ", t.viewScale, oldScale, scaleDiff);
+                //console.log("MapPane.start wheel moveLeft - ", wheelEvent.x, dragRect.left, dragRect.left - wheelEvent.x, moveLeft, contentRect);
+                //console.log("MapPane.start wheel moveLeft 2 - ", contentRect.width, contentRect.width / 2, (contentRect.width / 2) + contentRect.x - wheelEvent.x, moveLeft, dLeft);
+                ////console.log("MapPane.start wheel moveLeft - ", moveLeft, oldScale, t.viewScale, (oldScale - t.viewScale), t.hularion.principal.width(), wheelEvent.x, (t.hularion.principal.width() - wheelEvent.x));
+                //t.contentContainer.view.css("left", moveLeft);
+            }
+            if (wheelEvent.wheelDelta < 0) {
+                if (t.viewScale <= .25) {
+                    return;
+                }
+                t.viewScale -= .2;
+                if (t.viewScale <= .25) {
+                    t.viewScale = .25;
+                }
+                var contentRect = t.innerContainer.view[0].getBoundingClientRect();
+                //t.innerContainer.view.css("transform", "scale(" + t.viewScale + ")");
+                //t.draggable.view.css("width", (1 / t.viewScale * 100) + "%");
+                //var scaleDiff = (t.viewScale - oldScale);
+                //var dLeft = scaleDiff * contentRect.width;
+                //t.contentContainer.view.css("left", moveLeft);
+            }
+        }
+    }
+
+</script>
+
+<style>
+    .this {
+        height:inherit;
+    }
+
+    .mapPaneContent {
+        height: inherit;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        position:relative;
+    }
+    .mapPaneContent > *{
+        /*float:left;*/
+    }
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+</style>
+
+

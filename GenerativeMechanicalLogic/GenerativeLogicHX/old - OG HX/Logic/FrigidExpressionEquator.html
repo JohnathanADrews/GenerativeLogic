@@ -1,0 +1,216 @@
+﻿<div>
+
+    <div class="functionContainer">
+        <div class="functionName"><label></label></div>
+        <div class="subscriptIndex"><label></label></div>
+        <div class="superscriptIndex"><label></label></div>
+    </div>
+    <div class="assignmentOperator"><label></label></div>
+    <div class="expressionContainer"></div>
+    <div class="conditionContainer"></div>
+
+
+    <div class="templates">
+        <div class="conditionComma"><label>,</label></div>
+        <div class="conditionPeriod"><label>.</label></div>
+        <div class="indexValueCondition">
+            <div class="functionContainer">
+                <div class="functionName"><label></label></div>
+                <div class="subscriptIndex"><label></label></div>
+                <div class="superscriptIndex"><label></label></div>
+            </div>
+            <div class="assignmentOperator"><label></label></div>
+            <div class="constantValue"><label></label></div>
+        </div>
+        <div class="boundaryValueCondition">
+            <div class="subscriptName"><label></label></div>
+            <div class="comparisonOperator"><label></label></div>
+            <div class="indexBoundary"><label></label></div>
+        </div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidExpressionEquator() {
+            this.title = "Expression Equator";
+            this.expressionViewer = null;
+            this.functionContainer = null;
+            this.functionName = null;
+            this.subscriptIndex = null;
+            this.superscriptIndex = null;
+            this.conditionContainer = null;
+            this.conditions = [];
+
+            //public variables.
+            this.equation = new LogicalExpressionEquation();
+            //this.name = "f";
+            //this.subscript = "";
+            //this.superscript = "";
+            //this.expression = null;
+            this.assignment = "=";
+
+        }
+
+        FrigidExpressionEquator.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.functionContainer = t.principal.find("> .functionContainer");
+                t.functionName = t.functionContainer.find("> .functionName > label");
+                t.subscriptIndex = t.functionContainer.find("> .subscriptIndex > label");
+                t.superscriptIndex = t.functionContainer.find("> .superscriptIndex > label");
+                t.assignmentOperator = t.principal.find("> .assignmentOperator > label");
+                t.expressionViewer = $.h.app.presentation.logic.getFrigidExpression();
+                t.conditionContainer = t.principal.find("> .conditionContainer");
+                t.principal.find("> .expressionContainer").append(t.expressionViewer.view);
+            },
+
+            Render: function () {
+                var t = this;
+                t.Update();
+            },
+
+            Update: function () {
+                
+                var t = this;
+
+                //console.log("FrigidExpressionEquator.Update - ", t.equation);
+
+                t.functionName.html(t.equation.name);
+                t.subscriptIndex.html(t.equation.subscript);
+                t.superscriptIndex.html(t.equation.superscript);
+                t.assignmentOperator.html(t.assignment);
+                t.expressionViewer.code.expression = t.equation.expression;
+                t.expressionViewer.code.Render();
+
+                t.conditionContainer.empty();
+                $.d.ProcessArray(t.conditions, condition => {
+                    if (condition.type == RecursiveFunction.ConditionType.IndexBoundary) {
+                        t.conditionContainer.append(t.CreateTemplate("conditionComma"));
+                        var item = t.CreateTemplate("boundaryValueCondition");
+                        item.find("> .subscriptName > label").html(t.subscript);
+                        item.find("> .comparisonOperator > label").html(condition.symbol);
+                        item.find("> .indexBoundary > label").html(condition.index);
+                        t.conditionContainer.append(item);
+                    }
+                });
+                $.d.ProcessArray(t.conditions, condition => {
+                    if (condition.type == RecursiveFunction.ConditionType.IndexValue) {
+                        t.conditionContainer.append(t.CreateTemplate("conditionPeriod"));
+                        var item = t.CreateTemplate("indexValueCondition");
+                        item.find(".functionName > label").html(t.name);
+                        item.find(".subscriptIndex > label").html(condition.index);
+                        item.find(".superscriptIndex > label").html(t.superscript);
+                        item.find("> .constantValue > label").html(condition.value);
+                        item.find("> .assignmentOperator > label").html(t.assignment);
+                        t.conditionContainer.append(item);
+                    }
+                });
+            },
+
+            Parse: function (text) {
+                var t = this;
+                console.log("FrigidExpressionEquator.Parse 0 - ", t);
+                console.log("FrigidExpressionEquator.Parse 1 - ", text, " - ", t.equation.expression.RenderToText());
+                t.equation.Parse(text);
+                console.log("FrigidExpressionEquator.Parse 2 - ", text, " - ",  t.equation);
+                t.Update();
+            },
+
+            RenderText: function () {
+                var t = this;
+                
+                var text = t.equation.name;
+                if (t.equation.subscript != null && t.equation.subscript.trim() != "") {
+                    text += "[" + t.equation.subscript + "]";
+                    if (t.equation.subscript != null && t.equation.superscript.trim() != "") { text += "[" + t.equation.superscript + "]"; }
+                }
+                else if(t.equation.superscript != null &&t.equation.superscript.trim() != "") { text += "[][" + t.equation.superscript + "]"; }
+                text += " " + t.assignment + " " + t.equation.expression.RenderToText();
+                //console.log("FrigidExpressionEquator.RenderText - ", text, t.equation);
+                return text;
+            },
+
+            AddIndexValue: function (index, value) {                
+                this.conditions.push({ type:RecursiveFunction.ConditionType.IndexValue, index: index, value: value });
+            },
+
+            AddIndexBoundary: function (index, symbol) {
+                this.conditions.push({ type:RecursiveFunction.ConditionType.IndexBoundary, index: index, symbol: symbol });
+            },
+
+            EnableIndexNameMode: function (isEnabled) {
+                this.expressionViewer.code.EnableIndexNameMode(isEnabled);
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidExpressionEquator {
+            display: inline-block;
+        }
+
+        .FrigidExpressionEquator > * {
+            float: left;
+            margin-right: 8px;
+        }
+            
+        .FrigidExpressionEquator .functionName {
+            font-size: 20px;
+            font-weight:700;
+        }
+
+        .FrigidExpressionEquator   .subscriptIndex {
+            float: left;
+            margin-top: -16px;
+            margin-left: 14px;
+            font-size: 14px;
+        }
+
+        .FrigidExpressionEquator  .superscriptIndex {
+            float: left;
+            margin-top: -32px;
+            margin-left: -8px;
+            font-size: 14px;
+        }
+
+        .FrigidExpressionEquator > .assignmentOperator {
+            font-size: 20px;
+        }
+
+        .FrigidExpressionEquator > .conditionContainer > * {
+            float: left;
+        }
+            
+        .FrigidExpressionEquator > .conditionContainer > .indexValueCondition > *{
+            float: left;
+            margin-right: 14px;
+            font-size:20px;
+            margin-top:2px;
+        }
+
+        .FrigidExpressionEquator > .conditionContainer > .boundaryValueCondition > *{
+            float: left;
+            margin-right: 14px;
+            font-size:20px;
+            margin-top:2px;
+        }
+
+        .FrigidExpressionEquator > .conditionContainer > .conditionComma {
+            margin-right: 14px;
+            margin-top:8px;
+            margin-left:-12px;
+        }
+
+        .FrigidExpressionEquator > .conditionContainer > .conditionPeriod {
+            margin-right: 14px;
+            margin-top:8px;
+            margin-left:-8px;
+        }
+
+    </style>
+
+</div>

@@ -1,0 +1,95 @@
+﻿
+
+<hx h-publisher="Clicked" />
+<hx h-proxy="addTabHeader" />
+<hx h-proxy="selectTabHeader" />
+
+<div class="tabsContainer" h-handle="tabsContainer"></div>
+
+<script>
+
+    function TabHeaderBar() {
+        this.tabs = [];
+    }
+
+    TabHeaderBar.prototype = {
+
+        start: function (parameters) {
+            var t = this;
+
+            //console.log("TabHeaderBar.start - ", parameters, t);
+
+            t.hularion.principal.on("click", () => {
+                t.hularion.publisher.Clicked.publish();
+            });
+        },
+
+        addTabHeader: function (tab) {
+            var t = this;
+            t.tabs.push(tab);
+            t.tabsContainer.append(tab.view);
+        },
+
+        selectTabHeader: function (tab) {
+            var t = this;
+            for (var i = 0; i < t.tabs.length; i++) {
+                t.tabs[i].proxy.deselect();
+            }
+            tab.proxy.select();
+        }
+    }
+
+</script>
+<style>
+
+    .this {
+        user-select: none;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        display: inline-block;
+        overflow: hidden;
+        cursor: pointer;
+        border-bottom:solid 1px darkgray;
+    }
+
+        .this > * {
+            float: left;
+            margin-right:10px;
+            margin-top:4px;
+            margin-bottom:4px;
+        }
+
+        .this * {
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .this:hover {
+            cursor: pointer;
+        }
+
+        .this *:hover {
+            cursor: pointer;
+        }
+
+    .tabsContainer {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        display: inline-block;
+    }
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+    .textContent {
+        border-color: lightgray;
+    }
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+    .textContent {
+        border-color: lightgray;
+    }
+</style>
+

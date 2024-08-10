@@ -1,0 +1,163 @@
+﻿
+
+<hx h-publisher="KeyDown" />
+<hx h-publisher="KeyUp" />
+<hx h-publisher="EditShow" />
+<hx h-publisher="EditHide" />
+<hx h-publisher="DisplayShow" />
+<hx h-publisher="DisplayHide" />
+<hx h-publisher="TextChanged" />
+
+<hx h-proxy="getText" />
+<hx h-proxy="setText" />
+<hx h-proxy="getEditText" />
+<hx h-proxy="setDefaultText" />
+<hx h-proxy="setWidth" />
+<hx h-proxy="setHeight" />
+
+
+<label h-handle="display" class="display itemEditIncompleteColor"></label>
+<input h-handle="input" class="editor hide" spellcheck="false" />
+
+<script>
+
+    function TextBox() {
+        this.defaultText = "";
+        this.currentText = "";
+        this.stopPropagation = false;
+    }
+
+    TextBox.prototype = {
+
+        start: function (parameters) {
+            var t = this;
+
+            //console.log("TextBox.start - ", parameters, t);
+            if (parameters != null) {
+                if (parameters.name != null) {
+                    this.setText(parameters.name);
+                }
+            }
+
+
+            t.display.on("click", function (event) {
+                if (t.stopPropagation) { event.stopPropagation(); }
+                if (!t.forceEdit) {
+                    t.setEditView();
+                }
+            });
+            t.input.on("keydown", function (event) {
+                t.hularion.publisher.KeyDown.publish(event);
+                if (event.key == "Escape" || event.key == "Enter" || event.key == "Tab") {
+                    t.setDisplayView();
+                }
+            });
+            t.input.on("keyup", function (event) {
+                t.hularion.publisher.KeyUp.publish(event);
+            });
+            t.input.on("blur", function (event) {
+                t.setDisplayView();
+            });
+            t.setDefaultText("(empty)");
+        },
+
+        getText: function () {
+            return this.currentText;
+        },
+
+        setText: function (text) {
+            var t = this;
+            t.currentText = text;
+            t.input.val(text)
+            if (text != null && text.trim().length > 0) {
+                t.display.html(text);
+                t.display.removeClass("itemEditIncompleteColor");
+            }
+            else {
+                t.display.html(t.defaultText);
+            }
+        },
+
+        getEditText: function () {
+            return this.input.val();
+        },
+
+        setDefaultText: function (defaultText) {
+            var t = this;
+            var text = t.getText();
+            if (text == null || text.trim() == "" || text == t.defaultText) {
+                t.display.html(defaultText);
+            }
+            t.defaultText = defaultText;
+        },
+
+        setDisplayView: function () {
+            var t = this;
+            t.input.addClass("hide");
+            t.display.removeClass("hide");
+            t.currentText = t.input.val().trim();
+            if (t.input.val().trim().length > 0) {
+                //console.log("TextBox.setDisplayView 1 - ", t.input.val().trim(), t.defaultText);
+                t.display.html(t.input.val());
+                t.display.removeClass("itemEditIncompleteColor");
+            }
+            else {
+                //console.log("TextBox.setDisplayView 2 - ", t.input.val().trim(), t.defaultText);
+                t.display.html(t.defaultText);
+                t.display.addClass("itemEditIncompleteColor");
+            }
+            t.hularion.publisher.EditHide.publish();
+            t.hularion.publisher.DisplayShow.publish();
+        },
+
+        setEditView: function () {
+            var t = this;
+            t.display.addClass("hide");
+            if (t.display.html() != t.defaultText) {
+                t.input.val(t.display[0].childNodes[0].nodeValue);
+            }
+            t.input.removeClass("hide");
+            t.input.focus();
+            t.hularion.publisher.DisplayHide.publish();
+            t.hularion.publisher.EditShow.publish();
+        },
+
+        setWidth: function (width) {
+            this.hularion.principal.width(width);
+        },
+
+        setHeight: function (height) {
+            this.hularion.principal.height(height);
+        }
+    }
+
+</script>
+<style>
+
+    .this {
+        user-select: none;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        min-height: 22px;
+    }
+
+        .this > * {
+            float: left;
+        }
+
+        .this * {
+            user-select: none;
+        }
+
+    .editor {
+        width: calc(100% - 8px);
+    }
+
+    .display {
+        cursor: pointer;
+        min-width: 30px;
+    }
+</style>
+

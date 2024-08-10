@@ -1,0 +1,69 @@
+﻿
+<hx h-proxy="getValue"/>
+<hx h-proxy="setValue"/>
+
+<hx h-publisher="ValueChanged" />
+
+<label class="displayValue" h-handle="displayValue">0</label>
+
+<script>
+
+    function BitSelector() {
+    }
+
+    BitSelector.prototype = {
+
+        start: function () {
+            var t = this;
+            t.hularion.principal.on("click", function () {
+                if (t.displayValue.html() == "0") {
+                    t.displayValue.html("1");
+                    t.hularion.publisher.ValueChanged.publish({ old: 0, new: 1 });
+                }
+                else {
+                    t.displayValue.html("0");
+                    t.hularion.publisher.ValueChanged.publish({ old: 1, new: 0 });
+                }
+            });
+        },
+
+        getValue: function () {
+            var t = this;
+            if (t.displayValue.html() == "0") {
+                return 0;
+            }
+            return 1;
+        },
+
+        setValue: function (value) {
+            if (value == "0" || value === false) {
+                t.displayValue.html("0");
+            }
+            else {
+                t.displayValue.html("1");
+            }
+        }
+    }
+
+</script>
+
+<style>
+
+    .this {
+        display: inline-block;
+        user-select: none;
+        cursor: pointer;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .this > * {
+        display: flex;
+    }
+
+    .this * {
+        cursor: pointer;
+        user-select:none;
+    }
+
+</style>

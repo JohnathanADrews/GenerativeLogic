@@ -1,0 +1,338 @@
+
+**********************************
+Introduction
+**********************************
+
+Generative Mechanical Logic (or Generative Logic) is a purely mechanical logical system that is meant to build mathematics from scratch using bits, binary operators, and other stuctures such as recursive functions and recursion systems. Using this approach, we can analyze mathematics more generally, and without the need for axioms. Mathematics deals with numerical values, which is why axioms are required. Using bits, on the other hand, gives us access to the raw information so we can see what is going on behind the scenes in a numerical system. This document is being put together hastily from memory, so I recommend writing the expressions on paper to get a proper view of them. If there are any errors, they should be minor and easy to fix.
+
+
+To start, we create a recursion system, called the Incrementor. The incrementor takes a bit set of length k and modifies that bit set, effectively adding 1 to it (that is, the result if converted to a natural number is one greater than the argument, unless the argument was all 1s, in which case the result is all 0s).
+
+Then, we repeat applications of Incrementor to generate the Adder. See the notes below for clarity.
+
+Here is a rough notation in this ad-hoc document. Writing the expressions out would make it easier to see.
+[] are for a subscript (e.g [k]). A[k] is a bit set of length k
+|| are for an indexed value on a subscript.
+<> are for a superscript (e.g. <i>); F<i>[k](A[k]) is the ith repetition of F of length k applied to an initial set A[k] of length k.
+
+
+Incrementor	:=
+	Argument is A[k] = { a|k|, a|k-1|, ..., a|2|, a|1| }.
+	F := F[k](A[k]) = { f|k|, f|k-1|, ..., f|2|, f|1| }
+		such that f|k| = A|k| XOR r|k|
+	R := R[k](A[k]) = { r|k|, r|k-1|, ..., r|2|, r|1| }
+		such that r|i| = a|i-1| AND r|i-1| when i > 1
+		and r|i| = 1 when i = 1.		
+//As you can see, F relies on R, and R relies on R. R essentially provides the role of the carry.
+
+
+Adder :=
+	Arguments are A[k] = { a|k|, a|k-1|, ..., a|2|, a|1| } and B[k] = { b|k|, b|k-1|, ..., b|2|, b|1| }.
+	F := F[k](A[k]) = { f|k|, f|k-1|, ..., f|2|, f|1| }
+		such that f|k| = (a|k| XOR b|k|) XOR r|k|
+	R := R[k](A[k]) = { r|k|, r|k-1|, ..., r|2|, r|1| }
+		such that r|i| = (a|i-1| AND b|i-1|) OR ((a|i-1| XOR b|i-1|) AND r|i-1|) when i > 1
+		and r|i| = 1 when i = 0.
+//Similar to the incrementor, F relies on R, and R relies on R. R essentially provides the role of the carry. However, the expressions are more complicated.
+
+With the Incrementor and Adder, we can apply the operations of various sizes and compute a result by procesing bits from LSB to MSB. We can also generate the complete expression for any bit length. However, this is not the true purpose of generative logic. Instead, we want an algorithm that will take the recursion system for Incrementor as a parameter and then return the algorithm for Adder. What we want is the following.
+
+
+
+
+**********************************
+RepetionGenerator
+**********************************
+
+RepetionGenerator(Incrementor) -> Adder. 
+
+We can do this using a four step process. Notice that Adder takes two bit sets as arguments but Incrementor only takes one. This is because RepetionGenerator introduces a new bit set, N, which is used to track the number of repetitions applied. By repetition, I mean using the previously computed value as the argument in the next computation.
+
+RepetionGenerator works in roughly four steps. 
+Step 1 - Grouping the repetitions of F by powers of 2, and creating a new function, G, such that G<x> = F<2^x>
+Step 2 - Simplify the G expressions using factor based logic generation. That is, for functions X(s1), Y(s2), and Z(s3), where s1, s2, and s3 are sets of operands, and s1 = s2 Union s3, X = Y tau Z, where, tau is a binary operator. More on this later. Basically, we use factoring to generate an expression for of the grouped operator and then use mathematical induction (actually, a new induction method called logical induction) to generate the group. This is probably the most consuming step.
+Step 3 - Integrate the repetition counter N using the choice function, and a new function called Q.
+Step 4 - Reduce the result using techniques similar to step 2 and using induction. 
+
+
+So, step 1 is conceptually straightforward. Step 3 is follows a process that will always work. Steps 2 and 4 have a possibility of failing depending on the techniques availble for logic generation
+
+
+Here is Step 3
+
+Given that groups G<j>, create a new function Q such that Q<k> is the result.
+
+Q<j>[k] = { q<j>|k|, q<j>|i-1|, ..., q<j>|2|, q<j>|1| }
+Q<0>[k] = A[k]
+q<j>|i| = (N|i| AND g<j>|i|(Q<j-1>|k|)) OR ((NOT N|i|) AND q<j-1>|i|)
+
+As you can see, we are using the Choice function, choosing on N|i|, and we are choosing to include a group or not. This happens for every member of Q<j>. If we want to include a group (first term), then we call g<j>|i|, giving it the lower order group number of Q.  If we do not want to include it (N|i| == 0) then we just return the lower order group number for Q. 
+
+Consider 1 - The case where N is all 0s. Then, we are always calling the second term, evemtually arriving at A[k].
+Consider 2 - N[k] = 1 and the rest are zeros. Then, q<j>|i| = g<j>|i|(Q<j-1>|k|). So we will get the highest order group applied to A[k].
+Consider 3 - There are a mix of 0s and 1s in N. Then, the corresponding groups are selected where the result of a lower order group is fed as the argument to the next available higher order group. 
+
+
+So, there is the RepetionGenerator. It obviously works an input function with one parameter. With multiple parameter functions, a parameter must be chosen on which to apply repeetition. For commutative functions like addition and multiplication, either parameter can be chosen. However, for non-commutative functions (such as power i.e. x^y), the result will differ based on the parameter that is chosen.
+
+
+Regarding the simplification steps, they are important in two ways. First, if the groups are not simplified (step 2), then the expression that is generated is literally just applying the function repeatedly (e.g. adding 1 to 6 five times to achieve 6 + 5). Second, if the final result is not simplified, then it is the same as applying the groups one at a time.
+
+
+
+
+
+**********************************
+Logic Generation
+**********************************
+
+This is a difficult topic to discuss without graphics. Suppose you have a binary valued function F defined on binary variables, say { a, b, c }. Imagine a truth table with the variable on the left and your function result on the right. The signature of the function is the order of the variables from left to right on the truth table followed by the function values from top to bottom. With this convention, you can create a truth table like the following.
+
+a b c F
+0 0 0 0
+0 0 1 0
+0 1 0 1
+0 1 1 1
+1 0 0 0
+1 0 1 0
+1 1 0 0
+1 1 1 1
+
+The signature is F := {{a,b,c}, [00110001]} Now, imagine you have many more variables and a larger function array - the signature would be large but contain exactly enough information. Of course, if the order of the variables changes, then the order of bits in the function array must also change.
+
+
+Now, suppose you have F({a,b,c,d}) and you want to factor this into G({a,b}) tau H({c,d}), where tau is some binary operator. How would you do this, and what does it even mean? Well, look at the following truth table.
+
+a b c d  G  H  F = G XOR H
+0 0 0 0  g1 h1 0 
+0 0 0 1  g1 h2 1
+0 0 1 0  g1 h3 1
+0 0 1 1  g1 h4 1
+
+0 1 0 0  g2 h1 1
+0 1 0 1  g2 h2 1
+0 1 1 0  g2 h3 1
+0 1 1 1  g2 h4 0
+
+1 0 0 0  g3 h1 0
+1 0 0 1  g3 h2 1
+1 0 1 0  g3 h3 1
+1 0 1 1  g3 h4 1
+
+1 1 0 0  g4 h1 0
+1 1 0 1  g4 h2 0
+1 1 1 0  g4 h3 1
+1 1 1 1  g4 h4 0
+
+In this case, we want to find a G and H such that F = G XOR H, which may or may not be possible. For this, we need a factor map. It kind of looks like a Karnaugh Map. On the left, we have combinations for G, and across the top, combinations for H. On the interior, we have values for F at those locations inside of a cell for XOR in this case. It could be any of the 16 possible operators.
+
+In each cell, we need to see if there is a possible combination of G and H values that result in a valid combination.
+
+x1 => g|i| = 0 AND h|j| = 0
+x2 => g|i| = 0 AND h|j| = 1
+x3 => g|i| = 1 AND h|j| = 0
+x4 => g|i| = 1 AND h|j| = 1
+
+
+G \ H
+	           h1               h2               h3               h4
+		       00               01               10               11
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g1  00   |     f1    |    |     f2    |    |     f3    |    |     f4    |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g2  01   |     f5    |    |     f6    |    |     f7    |    |     f8    |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g3  10   |     f9    |    |     f10   |    |     f11   |    |     f12   |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g4  11   |     f13   |    |     f14   |    |     f15   |    |     f16   |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+Since were dealing with XOR in this example, we need to replace the x1. x2. x3. and x4 values with the result a 0/1 based on the value of f in each box. If f is 0, then we use the inverse XOR values, and if f is 1, then we use the XOR values. See below.
+
+Replace the f values.
+
+G \ H
+	           h1               h2               h3               h4
+		       00               01               10               11
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g1  00   |     0     |    |     1     |    |      1    |    |     1     |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g2  01   |     1     |    |     1     |    |     1     |    |     0     |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g3  10   |     0     |    |     1     |    |     1     |    |     1     |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+         | x1     x2 |    | x1     x2 |    | x1     x2 |    | x1     x2 |
+g4  11   |     0     |    |     0     |    |     1     |    |     0     |
+         | x3     x4 |    | x3     x4 |    | x3     x4 |    | x3     x4 |
+
+
+Now, if f|1| = 0, then we get
+
+| 1      0  |
+|     0     |
+| 0      1  |
+
+If f|i| = 1, we get 
+
+| 0      1  |
+|     1     |
+| 1      0  |
+
+
+Now, we have
+
+
+G \ H
+	           h1               h2               h3               h4
+		       00               01               10               11
+         | 1      0  |    | 0      1  |    | 0      1  |    | 0      1  | 
+g1  00   |     0     |    |     1     |    |     1     |    |     1     |
+         | 0      1  |    | 1      0  |    | 1      0  |    | 1      0  |
+
+         | 0      1  |    | 0      1  |    | 0      1  |    | 1      0  |
+g2  01   |     1     |    |     1     |    |     1     |    |     0     |
+         | 1      0  |    | 1      0  |    | 1      0  |    | 0      1  |
+
+         | 1      0  |    | 0      1  |    | 0      1  |    | 0      1  | 
+g3  10   |     0     |    |     1     |    |     1     |    |     1     |
+         | 0      1  |    | 1      0  |    | 1      0  |    | 1      0  |
+
+         | 1      0  |    | 1      0  |    | 0      1  |    | 1      0  |
+g4  11   |     0     |    |     0     |    |     1     |    |     0     |
+         | 0      1  |    | 0      1  |    | 1      0  |    | 0      1  |
+
+
+In the last step, we need to find a solution. To do this, we start at any x value that is 1. For example, in the g1/h1 box, we can start in the the top-left or bottom-right. Let's start in the top-left. Since we are in the top, we must choose a solution (1 value) in each cell to the right that is on the top. For the remaining cells on the right, this is the top-right corner. Since there is a solution in each of those cells, we are currently in a good state. Now, we need to follow each solution down. Since this is XOR, there is a solution in each cell. 
+
+Finally, each solution needs to match from each direction. In the g2/h1 cell, we are locked into the bottom-left solution because we chose the top-left solution in g1/h1. But, g2/h1/bl (bl = bottom-left) implies a g2/h2/bl solution. However, the g1/h2/tr solution forces a g2/h2/tr solution. Since there is a mismatch on g2/h2, then the solution we started with is not valid. If we started with the g1/h1/br solution, we would have a similar result. Therefore, F is not factorable on G and H over XOR.
+
+Now, let's modify F to make it factorable. By grouping F by the variables in G, this is like isolating the values of F by a row in the factor map. It turns out that for XOR, F is factorable if each group has the same sub-signature as the first group or the inverse of that signature. So, let's modify F such that we have the following factor table instead.
+
+F := {{a,b,c,d}, [0100 1011 1011 0100]}
+
+a b c d  G  H  F = G XOR H
+0 0 0 0  g1 h1 0 
+0 0 0 1  g1 h2 1
+0 0 1 0  g1 h3 0
+0 0 1 1  g1 h4 0
+
+0 1 0 0  g2 h1 1
+0 1 0 1  g2 h2 0
+0 1 1 0  g2 h3 1
+0 1 1 1  g2 h4 1
+
+1 0 0 0  g3 h1 1
+1 0 0 1  g3 h2 0
+1 0 1 0  g3 h3 1
+1 0 1 1  g3 h4 1
+
+1 1 0 0  g4 h1 0
+1 1 0 1  g4 h2 1
+1 1 1 0  g4 h3 0
+1 1 1 1  g4 h4 0
+
+G \ H
+	           h1               h2               h3               h4
+		       00               01               10               11
+         | 1      0  |    | 0      1  |    | 1      0  |    | 1      0  | 
+g1  00   |     0     |    |     1     |    |     0     |    |     0     |
+         | 0      1  |    | 1      0  |    | 0      1  |    | 0      1  |
+
+         | 0      1  |    | 1      0  |    | 0      1  |    | 0      1  |
+g2  01   |     1     |    |     0     |    |     1     |    |     1     |
+         | 1      0  |    | 0      1  |    | 1      0  |    | 1      0  |
+
+         | 0      1  |    | 1      0  |    | 0      1  |    | 0      1  | 
+g3  10   |     1     |    |     0     |    |     1     |    |     1     |
+         | 1      0  |    | 0      1  |    | 1      0  |    | 1      0  |
+
+         | 1      0  |    | 0      1  |    | 1      0  |    | 1      0  |
+g4  11   |     0     |    |     1     |    |     0     |    |     0     |
+         | 0      1  |    | 1      0  |    | 0      1  |    | 0      1  |
+
+
+Now, let's choose g1/h1/tl. Here, g1 is 0 and h1 is 0. Going to the right, we now have g1/h2/tr. Going down, we have g2/h1/bl. Then, going down from g1/h2/tr and right from g2/h1/bl, we arrive in the same place in g2/h2/br. So, the solution is consistent in that sector. Following the rest of the solution lines, we can see that we have a fit. For XOR, there will always be two possible solutions if there is a solutions, and the same for XNOR. For OR class or AND class of operators, there may be more. Given the solution we selected starting with g1/h1/tl, we can get the G values by going down the first column for the left values, getting tl, bl, bl, and tl. For tl, G is 0, and for bl, G is 1. Therefor, the solution is [0110]. Similarly for H, we can go across the top row, picking up the top values. We have tl, tr, tl, tl. For tl H is 0, and for tr H is 1, the solution for H is [0100].
+
+Therefore, 
+
+G := {{a,b}, [0110]}
+H := {{c,d}, [0100]}
+
+The truth table we get is
+
+a b c d  G  H  F = G XOR H
+0 0 0 0  0  0  0 
+0 0 0 1  0  1  1
+0 0 1 0  0  0  0
+0 0 1 1  0  0  0
+
+0 1 0 0  1  0  1
+0 1 0 1  1  1  0
+0 1 1 0  1  0  1
+0 1 1 1  1  0  1
+
+1 0 0 0  1  0  1
+1 0 0 1  1  1  0
+1 0 1 0  1  0  1
+1 0 1 1  1  0  1
+
+1 1 0 0  0  0  0
+1 1 0 1  0  1  1
+1 1 1 0  0  0  0
+1 1 1 1  0  0  0
+
+
+Factor Maps are a bigger subject, but basically they help visualize how to factor on a binary operator. In practice, they are used to prove a pattern that can be used to detect whether a function is factorable by simply reading the function values, rather than doing the time-consuming solution process each time. For instance, we can detect XOR simply by reading the first group and then detecting whether each group is either the same or the inverse. If they are, then it is factorable. If they are not, then it is not factorable. The key in developing a generalized solution is in recognizing that the columns and rows can be moved without affecting the integrity of the map. Then, by isolating the 1s (i.e. function output values in middle of each cell) in a corner of the map, the pattern can be extracted for all function intances.
+
+In GL, it is useful to factor in this way because we generally want to factor out the MSB variables if possible in order to develop an inductive process. Not any old logic generation will do.
+
+
+**********************************
+Logical Induction
+**********************************
+
+Since Generative Logic deals with ordered sets of bits and functions, Mathematical Induction, or rather something equivalent to it, is an ideal for mechanically proving a result. Since one of the goals of Generative Logic is to provide a more general and non-axiomatic approach to mathematics, using Mathematical Induction would be a problem.
+
+Mathematical Induction relies on the Well-Ordering Principle. It turms out though, that ANY ordering is sufficient to prove a series induction, and so we just need a way to order bit sets relative to each other. An order implies distinction among members of a set and transitivity. This is the essence of induction as a means to imply a result on a series of related "statements". To do this mechanically, we can create the GreaterThan (or LessThan) function.
+
+GreaterThan(A[k], B[k]) := 
+{
+	F[k] such that f|i| = a|i| AND (NOT b|i|) OR (a|i| AND b|i| AND f|i-1|) when i > 1
+		and f|i| = (a|i| AND b|i|) when i = 1.
+}
+
+So, GreaterThan(A[k], B[k]) -> 0 or GreaterThan(A[k], B[k]) -> 1. There is no added meaning to this. We could add meaning by converting the bits sets A and B to numbers and then assign a truthiness value to A > B, but we do not care about meaning in Generative Logic; we only care about the machinery and the result.
+
+The next step is to show that GreaterThan is transitive-1. That is, if GreaterThan(A[k], B[k]) -> 1 and GreaterThan(B[k], C[k]) -> 1, then GreaterThan(A[k], C[k]) -> 1. We could also use a transitive-0 system in which GreaterThan(A[k], B[k]) -> 0 (if A > B), but the F expressions (f) would need to be changed. Note that, given GreaterThan as stated, it is not transitive-0.
+
+Well, I say, that we just need to show this (transitive-1), but I do not recall that I ever actually proved this. I do recall doing something that "made sense" but it wasn't mechanized. I think the approach that "made sense" essentially involved use of induction itself, which was a problem. So, maybe someone out there can formally solve it. For now, and since we have Mathematical Induction, we can operate as if it is true. Since Mathematical Induction works, then any Series Induction or Logical Induction could later be swapped in seamlessly.
+
+
+
+**********************************
+Applications
+**********************************
+
+Initially, I developed Generative Logic as a way of discovering a (yet to be found) pattern in prime numbers. One of the main reasons I then developed Hularion was as means to properly express Generative Logic. Still haven't really popped the stack in that regard. One thing that I did notice is that, even in GL, prime numbers are a difficult subject and require some proper dedication.
+
+On the other hand, I believe that problems like 3x + 1  (I forgot the proper name of it) are solvable. Essentially, for 3x + 1, you have a repetition. If the number x is odd, you multiply by 3 and add 1. If x is even, you divide by two. So, we have a system like the following.
+
+F[k] = (x|1| AND Incrementor(Adder(Adder(X[k], X[k]), X[k]))) OR ((NOT x|1|) AND ShiftRight(X[k]))
+
+Basically, we use x|1| (LSB) as a Choice variable and then apply Incrementor and Adder or we ShiftRight, which is the same as dividing by 2 when X is "even" or has a zero in LSB.
+
+Now, we just need to make sure that F has a size of 4*k, or F[4*k], since Adder and Incrementor could carry up into large bit spaces. Then, we just use RepetionGenerator and get the result on repeating on N[k]. The result should be expressions that cancel out, leaving a constant LSB of 1 and the rest being 0. The next step would be to use induction to prove it for X[k+1]. Maybe one day I'll stop being lazy, finish the GL software, and take it for a spin on this problem.
+
+
+

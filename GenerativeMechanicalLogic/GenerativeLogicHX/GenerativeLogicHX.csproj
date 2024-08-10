@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="GenerativeLogicCore\Configuration\Control.html" />
+    <None Remove="GenerativeLogicCore\Configuration\GenerativeLogicScript.html" />
+    <None Remove="GenerativeLogicCore\Configuration\Logic.html" />
+    <None Remove="GenerativeLogicCore\GenerativeLogicCore.hxproject" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Button.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\HeaderTable.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Layout\Grid.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\List\VerticalList.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Menus\ContextMenu.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Menus\FullscreenMenu.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Menus\Menu.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Menus\MenuItem.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Navigation\ViewNavigationArray.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Navigation\ViewNavigationPath.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Pane\DraggablePane.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Pane\MapPane.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Pane\MapPaneOld.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Pane\MiniMapPane.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Pane\SizeablePane.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Pane\ViewPane.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\PopupWindow.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Table.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Tabs\TabBody.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Tabs\TabHeader.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Tabs\TabHeaderBar.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\Tabs\TabSystem.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\TextBox.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Control\ViewContainer.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\BitSelector.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\BitSetRecursion.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidBitSetVariable.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidExpression.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidExpressionEquator.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidExpressionManager.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidFunctionManager.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidFuntionalDisplay.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidLogicalFunction.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidOrderedBitSet.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidOrderedSet.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRecursionClass.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRecursionSystem.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRecursionSystemDefinition.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRecursionSystemEvaluator.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRecursionSystemExpressionGroups.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRecursionSystemGroups.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRecursiveFunction.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidRepetition.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidReverseKarnaughMap.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidSeriesSelector.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidSystemSelector.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\FrigidTruthTable.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\GenerativeLogic.html" />
+    <None Remove="GenerativeLogicCore\PresenterSets\Logic\TruthTable.html" />
+    <None Remove="GenerativeLogicPresentation\Applications\GenerativeLogic.html" />
+    <None Remove="GenerativeLogicPresentation\Configuration\GenerativeLogicPresenters.html" />
+    <None Remove="GenerativeLogicPresentation\GenerativeLogicPresentation.hxproject" />
+    <None Remove="GenerativeLogicPresentation\PresenterSets\GenerativeLogicPresenters\GenerativeLogicEntry.html" />
+    <None Remove="_Templates\Template.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="GenerativeLogicCore\Configuration\Control.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\Configuration\GenerativeLogicScript.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\Configuration\Logic.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\GenerativeLogicCore.hxproject" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Button.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Layout\HeaderTable.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Layout\Grid.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\List\VerticalList.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Menus\ContextMenu.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Menus\FullscreenMenu.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Menus\Menu.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Menus\MenuItem.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Navigation\ViewNavigationArray.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Navigation\ViewNavigationPath.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Pane\DraggablePane.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Pane\MapPane.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Pane\MapPaneOld.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Pane\MiniMapPane.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Pane\SizeablePane.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Pane\ViewPane.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\PopupWindow.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Layout\Table.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Tabs\TabBody.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Tabs\TabHeader.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Tabs\TabHeaderBar.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\Tabs\TabSystem.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\TextBox.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Control\ViewContainer.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Logic\TruthTable.html" />
+    <EmbeddedResource Include="GenerativeLogicCore\PresenterSets\Logic\BitSelector.html" />
+    <EmbeddedResource Include="GenerativeLogicPresentation\Applications\GenerativeLogic.html" />
+    <EmbeddedResource Include="GenerativeLogicPresentation\Configuration\GenerativeLogicPresenters.html" />
+    <EmbeddedResource Include="GenerativeLogicPresentation\GenerativeLogicPresentation.hxproject" />
+    <EmbeddedResource Include="GenerativeLogicPresentation\PresenterSets\GenerativeLogicPresenters\GenerativeLogicEntry.html" />
+    <EmbeddedResource Include="_Templates\Template.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="GenerativeLogicCore\Applications\" />
+    <Folder Include="GenerativeLogicCore\Graphics\" />
+    <Folder Include="GenerativeLogicCore\PresenterSets\Logic\RecursionSystem\" />
+    <Folder Include="GenerativeLogicPresentation\Graphics\" />
+    <Folder Include="GenerativeLogicPresentation\ScriptSets\" />
+  </ItemGroup>
+
+</Project>

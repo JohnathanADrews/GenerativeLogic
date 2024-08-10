@@ -1,0 +1,127 @@
+﻿
+
+<hx h-publisher="ItemSelected" />
+
+<hx h-proxy="addItem" />
+<hx h-proxy="removeItem" />
+<hx h-proxy="refresh" />
+
+<div h-handle="list" class="list">
+
+</div>
+
+<div h-clone="item" class="item">
+    <label h-handle="itemName"></label>
+</div>
+
+<script>
+
+    function VerticalList() {
+        this.items = new Map();
+    }
+
+    VerticalList.prototype = {
+
+        start: function (options) {
+
+            var t = this;
+            //console.log("VerticalList - ", options, t);
+
+        },
+
+        addItem: function (item) {
+            var t = this;
+            var clone = t.hularion.createClone("item");
+            clone.view.on("click", () => {
+                t.hularion.publisher.ItemSelected.publish(item);
+            });
+            clone.handles.itemName.html(item.title);
+            t.items.set(item, clone);
+            t.list.append(clone.view);
+        },
+
+        removeItem: function (item) {
+            var t = this;
+            if (!t.items.has(item)) {
+                return;
+            }
+            var clone = t.items.get(item);
+            clone.view.remove();
+            t.items.remove(item);
+        },
+
+        refresh: function () {
+            var t = this;
+
+            t.items.forEach((v, k, m) => {
+                if (k.show === false) {
+                    v.view.css("display", "none");
+                }
+                else {
+                    v.view.css("display", "");
+                }
+                v.view.html(k.title);
+            });
+        }
+
+
+    }
+
+</script>
+
+
+<style>
+    .this {
+        user-select: none;
+        padding:0;
+        margin:0;
+        border-style: solid;
+        border-width: 4px;
+    }
+    .list{
+        margin:0;
+        padding:4px;
+        width:100%;
+    }
+    .item {
+        padding: 6px;
+        cursor: pointer;
+        width: calc(100% - 20px);
+        font-size:30px;
+        border-bottom-style:solid;
+        border-bottom-width:2px;
+    }
+    .item *{
+        cursor: pointer;
+    }
+
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+    .this {
+        color: black;
+        border-color: lightgray;
+        background-color: white;
+    }
+    .item {
+        border-color: lightgray;
+    }
+    .item:hover {
+        background-color: darkgray;
+    }
+</style>
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+    .this {
+        color: white;
+        border-color: darkgray;
+        background-color: black;
+        background-color: lightgray;
+    }
+    .item {
+        border-color: darkgray;
+    }
+    .item:hover {
+        background-color: lightgray;
+    }
+</style>
+

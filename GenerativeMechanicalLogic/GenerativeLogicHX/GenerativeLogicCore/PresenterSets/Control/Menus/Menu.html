@@ -1,0 +1,52 @@
+﻿
+<hx h-component-handler="AddMenuItemHandler" h-method="addMenuItem" h-encoding="json" />
+
+<div class="mainMenuItems" h-handle="mainMenuItems"> </div>
+
+
+<script>
+
+    function Menu() {
+    }
+
+    Menu.prototype = {
+
+        start: function (parameters) {
+            var t = this;
+
+        },
+
+        addMenuItem: function (menuItem, options) {
+            var t = this;
+            //console.log("Menu.addMenuItem - ", menuItem, options);
+            menuItem.proxy.setSubMenuBottom();
+            t.mainMenuItems.append(menuItem.view);
+        }
+
+    }
+
+</script>
+<style>
+
+    .this {
+        user-select: none;
+        display: inline-block;
+        height:20px;
+    }
+
+        .this * {
+            user-select: none;
+        }
+</style>
+
+
+<style h-style-category-key="Structure" h-style-category-value="Standard">
+</style>
+
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+</style>
+

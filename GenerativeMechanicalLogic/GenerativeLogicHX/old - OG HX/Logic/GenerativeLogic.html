@@ -1,0 +1,281 @@
+﻿<div>
+
+    <div class="menuContainer"></div>
+    <div class="generativeLogicWorkspaceContainer">
+        <div class="testContainer hide"></div>
+        <div class="truthTableContainer hide"></div>
+        <div class="generativeLogicStart hide"><label>Generative Mechanical Logic</label></div>
+        <div class="operatorTables hide"></div>
+        <div class="operandSet hide"> </div>
+        <div class="recursiveFunctions hide"></div>
+        <div class="recursionSystems hide"></div>
+        <div class="recursionSystemGroups hide"></div>
+        <div class="recursionExpressionGroups hide"></div>
+        <div class="variables hide"></div>
+        <div class="recursionSystemDefinition hide"></div>
+        <div class="reverseKarnaughMapContainer hide"></div>
+        <div class="frigidFuntionalDisplayContainer hide"></div>
+    </div>
+    <div class="templates">
+        <div class="recursiveFunction"></div>
+        <div class="RecursionSystemTable"></div>
+    </div>
+
+    <script class="codeObject">
+
+        function GenerativeLogic() {
+            this.title = "Generative Logic";
+            this.operatorTables = null;
+            this.operandSet = null;
+            this.recursiveFunctions = null;
+            this.recursionSystems = null;
+            this.variables = null;
+            this.generativeLogicStart = null;
+
+            this.sections = {};
+            this.menu = null;
+
+            this.serializesSystems = {};
+        }
+
+        GenerativeLogic.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.testContainer = t.principal.find(".testContainer");
+                t.truthTableContainer = t.principal.find(".truthTableContainer");
+                t.operatorTables = t.principal.find(".operatorTables");
+                t.operandSet = t.principal.find(".operandSet");
+                t.recursiveFunctions = t.principal.find(".recursiveFunctions");
+                t.recursionSystems = t.principal.find(".recursionSystems");
+                t.recursionSystemGroups = t.principal.find(".recursionSystemGroups");
+                t.generativeLogicStart = t.principal.find(".generativeLogicStart");
+                t.recursionExpressionGroups = t.principal.find(".recursionExpressionGroups");
+                t.recursionSystemDefinition = t.principal.find(".recursionSystemDefinition");
+                t.reverseKarnaughMapContainer = t.principal.find(".reverseKarnaughMapContainer");
+                t.frigidFuntionalDisplayContainer = t.principal.find(".frigidFuntionalDisplayContainer");
+
+                //t.recursionExpressionGroups.removeClass("hide");
+                //t.truthTableContainer.removeClass("hide");
+                //t.operatorTables.removeClass("hide");
+                t.reverseKarnaughMapContainer.removeClass("hide");
+                //t.frigidFuntionalDisplayContainer.removeClass("hide");
+
+                t.sections = {
+                    "Start": t.generativeLogicStart,
+                    //"Test": t.testContainer,
+                    //"T. Table": t.truthTableContainer,
+                    "Operators": t.operatorTables,
+                    "Operand Set": t.operandSet,
+                    "R Functions": t.recursiveFunctions,
+                    "R Systems": t.recursionSystems,
+                    "Rep Groups": t.recursionSystemGroups,
+                    "Exp Groups": t.recursionExpressionGroups,
+                    "Rev. K. Map": t.reverseKarnaughMapContainer,
+                    "F. Display": t.frigidFuntionalDisplayContainer
+                };
+                var sectionsValues = $.d.GetObjectMemberValues(t.sections)
+
+                t.menu = $.h.app.presentation.shared.arctic.getArcticMenu();
+                $.d.ProcessObjectMemberNameValuePairs(t.sections, pair => {
+                    var menuItem = $.h.app.presentation.shared.arctic.getArcticMenuItem();
+                    menuItem.code.SetName(pair.name);
+                    menuItem.code.SetClick(() => {
+                        $.d.ProcessArray(sectionsValues, value => value.addClass("hide"));
+                        pair.value.removeClass("hide");
+                    });
+                    t.menu.code.AddMenuItem(menuItem);
+                });
+
+                t.serializesSystems["Incrementor"] = "@F!f, R!r, @A#a, k*i, f[i] := { a[i] XOR r[i];  i >= 1 }, r[i] := { a[i-1] AND r[i-1]; i > 1; r[1] = 1}";
+                t.serializesSystems["Adder"] = "@F!f, R!r, @A#a, B#b, k*i, f[i] := { (a[i] XOR b[i]) XOR r[i];  i >= 1 }, r[i] := { (a[i-1] AND b[i-1]) OR ( (a[i-1] XOR b[i-1]) AND r[i-1] ); i > 1; r[1] = 0}";
+                //t.serializesSystems["Adder"] = "@H!h, S!s, @C#c, D#d, k*i, h[i] := { (c[i] XOR d[i]) XOR s[i];  i >= 1 }, s[i] := { (c[i-1] AND d[i-1]) OR ( (c[i-1] XOR d[i-1]) AND s[i-1] ); i > 1; s[1] = 0}";
+
+                t.principal.find(".menuContainer").append(t.menu.view);
+
+                var tableUnary = FrigidTruthTable.GetUnaryOperatorsTable();
+                t.operatorTables.append(tableUnary.view);
+                tableUnary.code.Render();
+
+                //t.operatorTables.append("<br/><br/><br/>");
+
+                var tableBinary = FrigidTruthTable.GetBinaryOperatorsTable();
+                t.operatorTables.append(tableBinary.view);
+                tableBinary.code.Render();
+
+                //t.operatorTables.append("<br/><br/><br/>");
+
+                //var readerNode = null;
+
+                //var aOperandSet = $.h.app.presentation.logic.getFrigidOrderedBitSet();
+                //aOperandSet.code.series = new BitSeries("A", 0, "k", "a", "i");
+                //var incrementorRecursion = $.h.app.presentation.logic.getFrigidRecursiveFunction();
+                //incrementorRecursion.code.series = new BitSeries("R", 0, "k", "r", "i");
+                //incrementorRecursion.code.AddInitialValue(1, 1);
+                //incrementorRecursion.code.mainEquator.code.AddIndexBoundary(1, "&gt;");
+                //incrementorRecursion.code.mainEquator.code.AddIndexValue(1, 0);
+                //var incrementorLead = $.h.app.presentation.logic.getFrigidRecursiveFunction();
+                //incrementorLead.code.series = new BitSeries("F", 0, "k", "f", "i");
+                //incrementorLead.code.mainEquator.code.AddIndexBoundary(1, "&#8805;");
+
+
+                //var expression = new LogicalExpression();
+                //expression.root = LogicalExpression.CreateOperatorNode(LogicalOperator.Operators.AND);
+                //readerNode = LogicalExpression.CreateSeriesReaderNode(aOperandSet.code.series, -1);
+                //expression.root.nodes.push(readerNode);
+                //readerNode = LogicalExpression.CreateSeriesReaderNode(incrementorRecursion.code.series, -1);
+                //expression.root.nodes.push(readerNode);
+                //incrementorRecursion.code.expression = expression;
+
+                //var expression = new LogicalExpression();
+                //expression.root = LogicalExpression.CreateOperatorNode(LogicalOperator.Operators.XOR);
+                //readerNode = LogicalExpression.CreateSeriesReaderNode(aOperandSet.code.series, 0);
+                //expression.root.nodes.push(readerNode);
+                //readerNode = LogicalExpression.CreateSeriesReaderNode(incrementorRecursion.code.series, 0);
+                //expression.root.nodes.push(readerNode);
+                //incrementorLead.code.expression = expression;
+
+                //t.recursiveFunctions.append("<br/><br/>");
+                //t.operandSet.append(aOperandSet.view);
+                //t.recursiveFunctions.append(incrementorLead.view);
+                //t.recursiveFunctions.append("<br/>");
+                //t.recursiveFunctions.append(incrementorRecursion.view);
+                //aOperandSet.code.Render();
+                //incrementorLead.code.Render();
+                //incrementorRecursion.code.Render();
+
+
+
+
+
+                //system.code.AddVariable(aOperandSet);
+
+                //var leadFunction = new RecursiveFunction();
+                //leadFunction.series = incrementorLead.code.series;
+                //leadFunction.expression = incrementorLead.code.expression;
+                //system.code.AddFunction(leadFunction, true);
+
+                //var recursiveFunction = new RecursiveFunction();
+                //recursiveFunction.series = incrementorRecursion.code.series;
+                //recursiveFunction.expression = incrementorRecursion.code.expression;
+                //system.code.AddFunction(recursiveFunction);
+
+                //var freeform = "@F!f, R!r, @A#a, B#b, k*i, f[i] := { (a[i] XOR b[i]) XOR r[i];  i >= 1 }, r[i] := { (a[i-1] AND b[i-1]) OR ( (a[i-1] XOR b[i-1]) AND r[i-1] ); i > 1; r[1] = 0}";
+                //var tk = TreeTraverser.TokenizeRenderedExpression(freeform, "(", ")", { operators: LogicalOperator.Operators, leftBoundaryType: 0, rightBoundaryType: 1, operatorType: 2, otherType: 3 });
+                //console.log("GL - TreeTraverser.TokenizeRenderedExpression - tk - ", tk);
+                //var recursionSystem = RecursionSystem.ParseFreeform(freeform);
+                //console.log("GenerativeLogic.Render - RecursionSystem.ParseFreeform - ", recursionSystem);
+                //system.code.system = recursionSystem;
+
+                //*********************************************
+                //var system = $.h.app.presentation.logic.getFrigidRecursionSystem();
+                //t.recursionSystems.append(system.view);
+                //$.d.ProcessObjectMemberNameValuePairs(t.serializesSystems, pair => { system.code.AddSystem(pair); });
+                //system.code.Render();
+
+
+                //var groupSystem = $.h.app.presentation.logic.getFrigidRecursionSystemGroups();
+                //t.recursionSystemGroups.append(groupSystem.view);
+                //$.d.ProcessObjectMemberNameValuePairs(t.serializesSystems, pair => { groupSystem.code.AddSystem(pair); });
+                //groupSystem.code.Render();
+
+                //var groupExpressions = $.h.app.presentation.logic.getFrigidRecursionSystemExpressionGroups();
+                //t.recursionExpressionGroups.append(groupExpressions.view);
+                //$.d.ProcessObjectMemberNameValuePairs(t.serializesSystems, pair => { groupExpressions.code.AddSystem(pair); });
+                //groupExpressions.code.Render();
+
+                //var reverseKarnaughMap = $.h.app.presentation.logic.getFrigidReverseKarnaughMap();
+                //t.reverseKarnaughMapContainer.append(reverseKarnaughMap.view);
+                //reverseKarnaughMap.code.Render();
+
+                var reverseKarnaughMap = $.h.app.presentation.logic.getFrigidReverseKarnaughMap();
+                t.reverseKarnaughMapContainer.append(reverseKarnaughMap.view);
+                reverseKarnaughMap.code.Render();
+                
+
+                //var truthTable = $.h.app.presentation.logic.getFrigidTruthTable();
+                //t.truthTableContainer.append(truthTable.view);
+                //truthTable.code.Render();
+
+                var functionalDisplay = $.h.app.presentation.logic.getFrigidFuntionalDisplay();
+                t.frigidFuntionalDisplayContainer.append(functionalDisplay.view);
+
+                //var recursionSystemDefinitions = $.h.app.presentation.logic.getFrigidRecursionSystemDefinition();
+                //t.testContainer.append(recursionSystemDefinitions.view);
+                //////$.d.ProcessObjectMemberNameValuePairs(t.serializesSystems, pair => { recursionSystemDefinitions.code.AddSystem(pair); });
+                //recursionSystemDefinitions.code.SetSystem(t.serializesSystems["Incrementor"]);
+
+
+
+                //var freeform = "@F!f, R!r, @A#a, k*i, f[i] := { a[i] XOR r[i];  i >= 1 }, r[i] := { ((((a[i-1] AND ((r[i-1])))))); i > 1; r[1] = 1}";
+                //var recursionSystem = RecursionSystem.ParseFreeform(freeform);
+                //console.log("GenerativeLogic.Render - RecursionSystem.ParseFreeform - ", recursionSystem);
+                //var system = $.h.app.presentation.logic.getFrigidRecursionSystem();
+                //system.code.system = recursionSystem;
+                //t.recursionSystems.append(system.view);
+                //system.code.Render();
+
+                //var variableA = $.h.app.presentation.logic.getFrigidBitSetVariable();
+                //$.d.ProcessArray(recursionSystem.variables, variable => {
+                //    if (variable.name == "A") { variableA.code.series = variable; }
+                //});
+                //variableA.code.length = 6;
+                //variableA.code.Render();
+                //t.variables.append(variableA.view);
+
+                //variableA.code.SetValue(55);
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .GenerativeLogic {
+            /*background: rgba(139, 228, 214, 0.27);*/
+            font-family: 'Courier New';
+            max-height:1000px;
+            /*overflow-y:scroll;
+            overflow-x:unset;*/
+        }
+
+            .GenerativeLogic .menuContainer {
+                width: 100%;
+            }
+
+                .GenerativeLogic .menuContainer > * {
+                    width: 100%;
+                }
+
+            .GenerativeLogic .generativeLogicStart {
+                text-align: center;
+                width: 100%;
+                font-size: 40px;
+                padding: 20px;
+                background: linear-gradient(0deg, rgba(50, 150, 255, .7) 0%, rgba(255, 255, 255, .9) 20%, rgba(255, 255, 255, .9) 80%, rgba(255, 255, 255, .9) 81%, rgba(255, 255, 255, .9) 21%, rgba(50, 150, 255, .7) 100%);
+            }
+
+            .GenerativeLogic .recursiveFunctions > * {
+                width: 100%;
+            }
+
+            .GenerativeLogic .variables {
+                margin-top: 20px;
+                background: rgba(255, 255, 255, .9);
+            }
+
+            .generativeLogicWorkspaceContainer{
+                height:calc(96.5%);
+                /*height:900px;*/
+                /*border:solid 1px red;*/
+                display:inline-block;
+                overflow:hidden;
+            }
+
+            .GenerativeLogic  .operatorTables{
+                height:300px;
+            }
+    </style>
+
+</div>

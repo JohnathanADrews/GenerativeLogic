@@ -1,0 +1,19 @@
+﻿
+<hx h-hxpackage="true"
+    h-package-name="Generative Logic Presentation"
+    h-version="1.0.0"
+    h-brand-name="Generative Mechanical Logic"
+    h-product-key="GenerativeMechanicalLogic"
+    h-package-key="GenerativeLogicPresentation">
+
+
+    <hx h-package-import="GenerativeLogicCore@1.0.0=>GenerativeLogicCore" h-project="../GenerativeLogicCore" />
+	
+	<!--
+    <hx h-package-import="DomeImport@1.0.0=>DomeImport" h-project="../DomeImport" />
+	<hx h-import-script="DomeImport" h-import-set="Import" h-frame="DOME"></hx>
+	<hx h-script-frame="DOME" h-dome-wrapper="e=>$(e);"></hx>
+    -->
+
+</hx>
+

@@ -1,0 +1,96 @@
+﻿
+<h1 style="color:wheat">GenerativeLogicEntry</h1>
+
+<!--<hx h-presenter="GenerativeLogicCore.Logic/BitSelector" h-handle="bitSelector" />
+<hx h-presenter="GenerativeLogicCore.Logic/TruthTable" h-handle="truthTable" />-->
+<hx h-presenter="GenerativeLogicCore.Control/Grid" h-handle="grid" style="border:solid 1px green;margin:10px;" class="abc" />
+<hx h-presenter="GenerativeLogicCore.Logic/BitSelector" h-handle="bits" style="border:solid 1px green;margin:10px; background-color:white;"  />
+
+<div h-clone="cellContent" class="gridItem"><label h-handle="content"></label></div>
+
+<div h-handle="grids" class="grids"></div>
+
+<script>
+
+    function GenerativeLogicEntry() {
+    }
+
+    GenerativeLogicEntry.prototype = {
+
+        start: function () {
+            var t = this;
+
+            //console.clear();
+
+            console.log("GenerativeLogicEntry.start - ", t);
+            console.log("GenerativeLogicEntry.start - generativeLogic - ", generativeLogic);
+
+            //t.bitSelector.publisher.ValueChanged.subscribe((o, e) => {
+            //    console.log("GenerativeLogicEntry.start - bitSelector ValueChanged ", o, e);
+            //});
+
+
+            //t.truthTable.proxy.setVariables(["a", "b", "c"]);
+
+            //t.truthTable.proxy.update();
+
+
+            var grid1 = t.createGrid(5, 5);
+            console.log("GenerativeLogicEntry.start - grid ", grid1);
+
+            t.grids.append(grid1.dome);
+
+            grid2 = t.createGrid(2, 7);
+            t.grids.append(grid2.dome);
+
+        },
+
+        createGrid: function (columns, rows) {
+            var t = this;
+
+
+            var grid = generativeLogic.control.presenters.Grid.create();
+
+            grid.proxy.insertColumns(0, columns);
+            grid.proxy.insertRows(0, rows);
+
+            grid.proxy.setBaseColumnWidth(50);
+
+            algorithm.control.processIterator(0, columns - 1, i => {
+                algorithm.control.processIterator(0, rows - 1, j => {
+                    var clone = t.hularion.createClone("cellContent");
+                    clone.handles.content.innerHTML = "(" + i + ", " + j + ")";
+                    grid.proxy.setContent(i, j, clone.dome);
+                });
+            });
+
+            return grid;
+        }
+    }
+
+</script>
+
+<style>
+
+    .this{
+        background-color:black;
+        height:100vh;
+    }
+
+    .gridItem{
+        width:calc(100% - 2px);
+        height:calc(100% - 2px);
+        border:solid 1px blue;
+        color:white;
+        text-align:center;
+    }
+
+    .grids{
+        padding:10px;
+        border: solid 2px red;
+    }
+    .grids > *{
+        margin:10px;
+    }
+
+</style>

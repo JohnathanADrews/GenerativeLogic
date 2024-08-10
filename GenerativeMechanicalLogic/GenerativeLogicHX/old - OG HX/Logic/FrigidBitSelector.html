@@ -1,0 +1,124 @@
+﻿<div>
+    <div class="editMode hide">
+        <div class="booleanValue unselectedBooleanValue booleanTrue"><label>1</label></div>
+        <div class="booleanValue unselectedBooleanValue booleanFalse"><label>0</label></div>
+    </div>
+    <div class="displayMode">
+        <label class="displayValue">0</label>
+    </div>
+
+    <script class="codeObject" >
+        //Setup .GetTypeKey inherited from base class that returns data-typekey
+        function FrigidBitSelector() {
+            this.principal = null;
+            this.value = false;
+            this.updater = function (value) { };
+        }
+
+        FrigidBitSelector.prototype = {
+
+            SetPrincipal: function (view) { this.principal = view; },
+
+            Start: function () {
+                var t = this;
+                t.principal.find(".displayValue").on("click", function () {
+                    t.principal.find(".displayMode").addClass("hide");
+                    t.principal.find(".editMode").removeClass("hide");
+                    DynamicUI.SetToAggregateHeight(t.principal[0]);
+                });
+                t.principal.find(".booleanTrue").on("click", function () {
+                    t.SetValue(true);
+                    DynamicUI.SetToAggregateHeight(t.principal[0]);
+                })
+                t.principal.find(".booleanFalse").on("click", function () {
+                    t.SetValue(false);
+                    DynamicUI.SetToAggregateHeight(t.principal[0]);
+                })
+            },
+
+            SetUpdate: function (updater) {
+                this.updater = updater;
+            },
+
+            GetValue: function () {
+                return this.value;
+            },
+
+            SetValue: function (value) {
+                var t = this;
+                var old = t.value;
+                t.value = value;
+                console.log("FrigidBitSelector.SetValue - ", value);
+                if (old ^ value) {
+                    t.updater(value);
+                    console.log("FrigidBitSelector.SetValue - changed - ", value);
+                }
+                if (value) {
+                    t.principal.find(".displayMode .displayValue").html(t.principal.find(".booleanTrue").html());
+                    t.principal.find(".displayMode .displayValue").addClass("booleanTrueDisplayValue");
+                    t.principal.find(".displayMode .displayValue").removeClass("booleanFalseDisplayValue");
+
+                    t.principal.find(".editMode .booleanTrue").addClass("selectedBooleanValue");
+                    t.principal.find(".editMode .booleanTrue").removeClass("unselectedBooleanValue");
+                    t.principal.find(".editMode .booleanFalse").addClass("unselectedBooleanValue");
+                    t.principal.find(".editMode .booleanFalse").removeClass("selectedBooleanValue");
+                }
+                else {
+                    t.principal.find(".displayMode .displayValue").html(t.principal.find(".booleanFalse").html());
+                    t.principal.find(".displayMode .displayValue").addClass("booleanFalseDisplayValue");
+                    t.principal.find(".displayMode .displayValue").removeClass("booleanTrueDisplayValue");
+
+                    t.principal.find(".editMode .booleanTrue").addClass("unselectedBooleanValue");
+                    t.principal.find(".editMode .booleanTrue").removeClass("selectedBooleanValue");
+                    t.principal.find(".editMode .booleanFalse").addClass("selectedBooleanValue");
+                    t.principal.find(".editMode .booleanFalse").removeClass("unselectedBooleanValue");
+                }
+                t.principal.find(".editMode").addClass("hide");
+                t.principal.find(".displayMode").removeClass("hide");
+            }
+        }
+
+    </script>
+
+    <style>
+
+        .FrigidBitSelector .booleanValue {
+            float: left;
+            border: solid 1px;
+            padding-left: 5px;
+            padding-right: 5px;
+            cursor: pointer;
+            height: 23px;
+        }
+
+        .FrigidBitSelector * {
+            cursor: pointer;
+        }
+
+        .FrigidBitSelector .selectedBooleanValue {
+            background-color: rgba(0,0,200,.2);
+        }
+
+        .FrigidBitSelector .displayValue {
+            cursor: pointer;
+        }
+
+        .FrigidBitSelector .unselectedBooleanValue {
+            background-color: rgba(255,255,255,.3);
+        }
+
+        .FrigidBitSelector .unselectedBooleanValue:hover {
+            background-color: rgba(255,255,255,.6);
+            border-color: gold;
+        }
+
+        .FrigidBitSelector .booleanTrueDisplayValue {
+            color: #224127;
+        }
+
+        .FrigidBitSelector .booleanFalseDisplayValue {
+            color: #491701;
+        }
+    </style>
+
+</div>

@@ -1,0 +1,84 @@
+﻿<div>
+
+
+    <div class="systemDisplay">
+        <div class="variablesContainer"></div>
+        <div class="functionsContianer"></div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidRecursionSystemDefinition() {
+            this.title = "Recursion System Definition";
+            
+            this.lead = null;
+
+            this.system = null;
+            this.variablesContainer = null;
+            this.functionsContianer = null;
+        }
+
+        FrigidRecursionSystemDefinition.prototype = {
+
+            Start: function () {
+                var t = this;
+                
+                t.variablesContainer = t.principal.find("> .systemDisplay > .variablesContainer");
+                t.functionsContianer = t.principal.find("> .systemDisplay > .functionsContianer");
+                                
+            },
+
+            SetSystem: function (serializedSystem) {
+                var t = this;
+                t.system = RecursionSystem.ParseFreeform(serializedSystem.value);
+
+                t.variablesContainer.empty();
+                t.functionsContianer.empty();
+
+                $.d.ProcessArray(t.system.variables, variable => {
+                    var set = $.h.app.presentation.logic.getFrigidOrderedBitSet();
+                    set.code.series = variable;
+                    t.variablesContainer.append(set.view);
+                    set.code.Render();
+                });
+
+                //Renders the seies definition.
+                var renderer = recursion => {
+                    var recursive = $.h.app.presentation.logic.getFrigidRecursiveFunction();
+                    recursive.code.recursiveFunction = recursion;
+                    t.functionsContianer.append(recursive.view);
+                    recursive.code.Render();
+                };
+
+                //display lead first.
+                renderer(t.system.lead);
+                //display non-lead functions.
+                $.d.ProcessArray(t.system.functions, recursion => {
+                    if (recursion.isLead === true) { return ; }
+                    renderer(recursion);
+                });
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidRecursionSystemDefinition {
+            display:inline-block;
+            background: rgba(255,255,255,.9);
+        }
+        .FrigidRecursionSystemDefinition > .systemDisplay{
+            width:calc(100% - 0px);
+            display:inline-block;
+            overflow:hidden;
+            float:left;
+            border:solid 2px;
+            margin-right:2px;
+        }
+
+
+    </style>
+
+</div>

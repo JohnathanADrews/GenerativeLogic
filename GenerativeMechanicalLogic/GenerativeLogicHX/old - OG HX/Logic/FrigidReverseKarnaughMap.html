@@ -1,0 +1,838 @@
+﻿<div>
+
+    <div class="functionInputContainer">
+        <div class="functionManagerContainer"></div>
+        <div class="expressionImportContainer">
+            <div class="importExpressions button"><label>Import Expression</label></div>
+            <div class="expressionOptionsContainer hide">
+                <div class="expressionManagerContainer"></div>
+                <div class="importActive cursorPointer"><label>Import Active</label></div>
+            </div>
+        </div>
+        <div class="inputTruthTableContainer"></div>
+    </div>
+
+    <div class="karnaughMapContainer">
+
+
+        <div class="divisionContainer standardBackgroundColor">
+            <div class="functionEquationSelectionLabel">
+                <div class="factoredFunctionLabel"><label>F =</label></div>
+                <div class="functionSelectionContainer"><select></select></div>
+            </div>
+
+            <div class="variablesSelectorContainer">
+                <div class="factoredFunctionLabel"><label>F = G(</label></div>
+                <div class="factoredVariables"></div>
+                <div class="factoredFunctionLabel"><label>)</label></div>
+                <div class="operatorSelectionContainer"><select></select></div>
+                <!--<div class="factorVariableDivider"><label>X</label></div>-->
+                <div class="factoredFunctionLabel"><label>H(</label></div>
+                <div class="remainingVariables"></div>
+                <div class="factoredFunctionLabel"><label>)</label></div>
+                <div class="mapUpdate button"><label>Update</label></div>
+            </div>
+        </div>
+        <!--<div class="rKMapContainer">
+            <div class="rKMapGFunctionName"></div>
+            <div class="rKMapRightSide">
+                <div class="rKMapHFunctionName"></div>
+            </div>
+        </div>-->
+        <div class="tableContainer"></div>
+    </div>
+
+    <div class="templates">
+        <div class="mapCell">
+            <div class="mapCellBackground"><div></div></div>
+            <div class="leftColumnCellSelect columnCellSelectLine invisible"></div>
+            <div class="rightColumnCellSelect columnCellSelectLine invisible"></div>
+            <div class="topRowCellSelect columnCellSelectLine invisible"></div>
+            <div class="bottomRowCellSelect columnCellSelectLine invisible"></div>
+            <div class="valueCluster">
+                <div class="zeroZeroValue clusterValueQuadrant"><div class="clusterValueContainer "><label></label></div></div>
+                <div class="zeroOneValue clusterValueQuadrant"><div class="clusterValueContainer "><label></label></div></div>
+                <div class="oneZeroValue clusterValueQuadrant"><div class="clusterValueContainer "><label></label></div></div>
+                <div class="oneOneValue clusterValueQuadrant"><div class="clusterValueContainer "><label></label></div></div>
+            </div>
+            <div class="centralValue "><label>x</label></div>
+        </div>
+        <div class="columnHeaderCell ">
+            <div class="factoredHAddress standardBackgroundColor"><label></label></div>
+            <div class="factoredHValues standardBackgroundColor">
+                <div class="factoredHZeroValue"><label>0</label></div>
+                <div class="factoredHOneValue"><label>1</label></div>
+            </div>
+        </div>
+        <div class="rowHeaderCell ">
+            <div class="factoredGAddress standardBackgroundColor"><label></label></div>
+            <div class="factoredGValues standardBackgroundColor">
+                <div class="factoredGZeroValue"><label>0</label></div>
+                <div class="factoredGOneValue"><label>1</label></div>
+            </div>
+        </div>
+        <div class="variableSelectionContainer selectableItem"><label></label></div>
+        <div class="functionDisplayContainer"></div>
+        <div class="functionNameCell">
+            <div class="functionGNameLabel"><label>G</label></div>
+            <div class="functionHNameLabel"><label>H</label></div>
+        </div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidReverseKarnaughMap() {
+            this.title = "Reverse Karnaugh Map";
+            this.table = null;
+            this.inputFunctionManager = null;
+            this.inputExpressionManager = null;
+            this.inputTruthTable = null;
+            this.functionSelectionContainer = null;
+            this.operatorSelectionContainer = null;
+        }
+
+        FrigidReverseKarnaughMap.prototype = {
+
+            Start: function () {
+                var t = this;
+
+                t.inputFunctionManager = $.h.app.presentation.logic.getFrigidFunctionManager();
+                t.inputExpressionManager = $.h.app.presentation.logic.getFrigidExpressionManager();
+                t.inputTruthTable = $.h.app.presentation.logic.getFrigidTruthTable();
+                
+                t.functionSelectionContainer = t.principal.find(".functionSelectionContainer");
+                t.operatorSelectionContainer = t.principal.find(".operatorSelectionContainer");
+                
+                t.principal.find(".functionManagerContainer").append(t.inputFunctionManager.view);
+                t.principal.find(".expressionManagerContainer").append(t.inputExpressionManager.view);
+                t.principal.find(".inputTruthTableContainer").append(t.inputTruthTable.view);
+
+                t.table = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.tableContainer = t.principal.find(".tableContainer");
+                t.tableContainer.append(t.table.view);
+
+                t.principal.find(".importExpressions").on("click", e => {
+                    var o = t.principal.find(".expressionOptionsContainer");
+                    if (o.hasClass("hide")) { o.removeClass("hide"); }
+                    else o.addClass("hide");
+                });
+
+                
+                t.inputExpressionManager.code.SetUpdate(() => {
+                    var equations = t.inputExpressionManager.code.GetEquations();
+                    t.inputTruthTable.code.SetEquations(equations);
+                });
+                t.inputFunctionManager.code.SetUpdater(() => {
+                    var functions = t.inputFunctionManager.code.GetFunctions();
+                    t.inputTruthTable.code.SetFunctions(functions);
+
+                    var importMap = new Map();
+                    $.d.ProcessArray(functions, functionData => { importMap.set(functionData.logicalFunction, functionData); });
+                    var displayed = new Map();
+                    $.d.ProcessArray(t.functionSelectionContainer.find("option"), view => {
+                        var logicalFunction = $(view).data("function");
+                        displayed.set(logicalFunction, logicalFunction);
+                    });
+                    var adds = [];
+                    var deletes = [];
+                    $.d.ProcessArray(functions, functionData => { if (!displayed.has(functionData.logicalFunction)) { adds.push(functionData); } });
+                    displayed.forEach((value, key, map) => { if (!importMap.has(key)) { deletes.push(key); } });
+                    
+                    $.d.ProcessArray(deletes, logicalFunction => {
+                        displayed.get(logicalFunction).view.closest(".functionSelectionContainer").remove();
+                    });
+                    $.d.ProcessArray(adds, functionData => {
+                        if (functionData.isActive !== true) { return; }
+                        var option = $("<option></option>");
+                        option.html(functionData.logicalFunction.RenderToText({breakCount:4}));
+                        option.data("function", functionData.logicalFunction);
+                        t.functionSelectionContainer.find("select").append(option);
+                    });
+                    t.SetupVariables();
+                });
+
+                t.functionSelector = t.functionSelectionContainer.find("select");
+                t.factoredVariables = t.principal.find(".factoredVariables").empty();
+                t.remainingVariables = t.principal.find(".remainingVariables").empty();
+                
+                t.functionSelector.on("change", e => { t.SetupVariables(); });
+                
+                t.operatorSelector = t.operatorSelectionContainer.find("select");
+                $.d.ProcessArray($.d.GetObjectMemberNameValuePairs(LogicalOperator.Binary), binaryOperator => {
+                    var item = $("<option></opiton>");
+                    item.html(binaryOperator.name);
+                    item.data("operator", binaryOperator.value);
+                    t.operatorSelector.append(item);
+                });
+                t.operatorSelector.on("change", e => { });
+
+
+                t.principal.find(".mapUpdate").on("click", () => { t.Update(); });
+
+                
+                var logicalFunction1 = LogicalFunction.Parse("f1={a,b,c,x,y,z}[00000000,00011011,01010101,00011011,10101010,00011011,11111111,00011011]");
+                var logicalFunction2 = LogicalFunction.Parse("f2[k]={a,b,c}[0,1,0,1,1,0,1,0]");
+                var logicalFunction3 = LogicalFunction.Parse("f3[x][y]={a,b,c}[0,0,1,0,1,0,1,1]");
+                var logicalFunction4 = LogicalFunction.Parse("F[][Q]={a,b,c}[0,0,1,0,1,0,1,1]");
+                var logicalFunction5 = LogicalFunction.Parse("F[Jrge][Q34t3]={a,b,c}[0,0,1,0,1,0,1,1]");
+                t.inputFunctionManager.code.AddFunction(logicalFunction1);
+                t.inputFunctionManager.code.AddFunction(logicalFunction2);
+                t.inputFunctionManager.code.AddFunction(logicalFunction3);
+                t.inputFunctionManager.code.AddFunction(logicalFunction4);
+                t.inputFunctionManager.code.AddFunction(logicalFunction5);
+                
+                t.inputTruthTable.code.SetFunctionUpdateReporter(logicalFunction => t.inputFunctionManager.code.UpdateFunction(logicalFunction));
+
+            },
+
+            Render: function () {
+                var t = this;
+                t.Update();
+            },
+
+            SetupVariables: function () {
+                var t = this;
+                var logicalFunction = t.functionSelector.find(":selected").data("function");
+                t.factoredVariables.empty();
+                t.remainingVariables.empty();
+                $.d.ProcessArray(logicalFunction.variables, variable => {
+                    var variableDisplay = t.CreateTemplate("variableSelectionContainer");
+                    variableDisplay.find("label").html(variable);
+                    variableDisplay.on("click", () => {
+                        if (variableDisplay.closest(".factoredVariables").length == 0) { t.factoredVariables.append(variableDisplay); }
+                        else { t.remainingVariables.append(variableDisplay);  }
+                    });
+                    t.factoredVariables.append(variableDisplay);
+                });
+            },
+
+            Update: function () {
+                var t = this;
+                var logicalFunction = t.functionSelector.find(":selected").data("function");
+                var factorLeftCount = t.factoredVariables.find("> *").length;
+                var factorRightCount = t.remainingVariables.find("> *").length;
+                if (logicalFunction == null || factorLeftCount == 0 || factorRightCount == 0) { return; }
+                
+                var columns = (1 << factorRightCount);
+                var rows = (1 << factorLeftCount);
+                
+                var columnSpace = LogicalExpression.CreateStateSpaceValues(factorRightCount, true);
+                var rowSpace = LogicalExpression.CreateStateSpaceValues(factorLeftCount, true);
+                
+                console.log("FrigidReverseKarnaughMap.Update 2  - ", columns, rows, t.table.code.GetColumnCount() + 1, t.table.code.GetRowCount() + 1);
+                if (columns != t.table.code.GetColumnCount() + 1 || rows != t.table.code.GetRowCount() + 1) {
+                    t.table.code.Clear();
+                    t.table.code.AppendColumns(columns + 1);
+                    t.table.code.AppendRows(rows + 1);
+                    var sideLength = 61;
+                    t.table.code.SetBaseColumnWidth(sideLength);
+                    t.table.code.SetBaseRowHeight(sideLength);
+                    t.table.code.SetColumnWidth(0, 10 * factorLeftCount + 50);
+                    t.table.code.SetRowHeight(0, 42);
+                    //t.table.code.BlankCell(0, 0);
+
+                    var functionNameCell = t.CreateTemplate("functionNameCell");
+                    t.table.code.SetContent(0,0,functionNameCell);
+                
+                    //t.tableContainer.data("columnSpace", columnSpace);
+                    //t.tableContainer.data("rowSpace", rowSpace);
+                    //console.log("FrigidReverseKarnaughMap.Update 4 space - ", columnSpace, rowSpace);
+                    $.d.ProcessIterator(1, columnSpace.length, j => {
+                        var cell = t.CreateTemplate("columnHeaderCell");
+                        cell.find(".factoredHAddress label").html(columnSpace[j-1].join(""));
+                        t.table.code.SetContent(j, 0, cell);
+                    });
+                    $.d.ProcessIterator(1, rowSpace.length, i => {
+                        var cell = t.CreateTemplate("rowHeaderCell");
+                        cell.find(".factoredGAddress label").html(rowSpace[i-1].join(""));
+                        t.table.code.SetContent(0, i, cell);
+                    });
+                    $.d.ProcessIterator(1, columns, j => {
+                        $.d.ProcessIterator(1, rows, i => {
+                            var cell = t.CreateTemplate("mapCell");
+                            cell.find(".zeroZeroValue label").html(0);
+                            cell.find(".zeroOneValue label").html(0);
+                            cell.find(".oneZeroValue label").html(0);
+                            cell.find(".oneOneValue label").html(0);
+                            cell.find(".centralValue label").html(0);
+                            t.table.code.SetContent(j, i, cell);
+                        });
+                    });
+                }
+
+
+                
+                var columnVariables = [];
+                $.d.ProcessArray(t.remainingVariables.find(".variableSelectionContainer label"), item => { columnVariables.push($(item).html()); });
+                var rowVariables = [];
+                $.d.ProcessArray(t.factoredVariables.find(".variableSelectionContainer label"), item => { rowVariables.push($(item).html()); });
+                
+                console.log("FrigidReverseKarnaughMap.Update 1 select - ", columns, rows, logicalFunction, columnVariables, rowVariables);
+                
+                var binaryOperator = t.operatorSelector.find(":selected").data("operator");
+                var binaryValues = [[],[]];
+                binaryValues[0].push(binaryOperator.Evaluate([0,0]) ^ 1);
+                binaryValues[0].push(binaryOperator.Evaluate([0,1]) ^ 1);
+                binaryValues[0].push(binaryOperator.Evaluate([1,0]) ^ 1);
+                binaryValues[0].push(binaryOperator.Evaluate([1,1]) ^ 1);
+                binaryValues[1].push(binaryOperator.Evaluate([0,0]));
+                binaryValues[1].push(binaryOperator.Evaluate([0,1]));
+                binaryValues[1].push(binaryOperator.Evaluate([1,0]));
+                binaryValues[1].push(binaryOperator.Evaluate([1, 1]));
+
+                console.log("FrigidReverseKarnaughMap.Update 1 binaryValues - ", binaryValues);
+
+                var values = {};
+                $.d.ProcessIterator(1, columns, j => {
+                    $.d.ProcessIterator(1, rows, i => {
+                        var content = t.table.code.GetContent(j, i);
+                        var columnState = columnSpace[j - 1];
+                        var rowState = rowSpace[i - 1];
+                        $.d.Iterate(0, columnState.length - 1, k => { values[columnVariables[k]] = columnState[k]; });
+                        $.d.Iterate(0, rowState.length - 1, k => { values[rowVariables[k]] = rowState[k]; });
+                        //logicalFunction.GetValueByVariables(variables);
+                        //console.log("FrigidReverseKarnaughMap.Update 2 - ", columnState.length, rowState.length, columnVariables, rowVariables, values, logicalFunction.GetValueByVariables(variables));
+                        var value = logicalFunction.GetValue(values);
+                        content.find(".centralValue label").html(value);
+                        content.find(".centralValue").addClass(value == 0 ? "centralValueZero" : "centralValueOne");
+
+                        var zeroZeroValue = content.find(".zeroZeroValue");
+                        zeroZeroValue.find("label").html(binaryValues[value][0]);
+                        zeroZeroValue.data("value", binaryValues[value][0]);
+                        if (binaryValues[value][0] == 1) { zeroZeroValue.find(".clusterValueContainer").addClass("selectableValueSolution"); }
+                        else { zeroZeroValue.find(".clusterValueContainer").removeClass("selectableValueSolution"); }
+                        zeroZeroValue.data("quad", "00");
+
+                        var zeroOneValue = content.find(".zeroOneValue");
+                        zeroOneValue.find("label").html(binaryValues[value][1]);
+                        zeroOneValue.data("value", binaryValues[value][1]);
+                        if (binaryValues[value][1] == 1) { zeroOneValue.find(".clusterValueContainer").addClass("selectableValueSolution"); }
+                        else { zeroOneValue.find(".clusterValueContainer").removeClass("selectableValueSolution"); }
+                        zeroOneValue.data("quad", "01");
+
+                        var oneZeroValue = content.find(".oneZeroValue");
+                        oneZeroValue.find("label").html(binaryValues[value][2]);
+                        oneZeroValue.data("value", binaryValues[value][2]);
+                        if (binaryValues[value][2] == 1) { oneZeroValue.find(".clusterValueContainer").addClass("selectableValueSolution"); }
+                        else { oneZeroValue.find(".clusterValueContainer").removeClass("selectableValueSolution"); }
+                        oneZeroValue.data("quad", "10");
+
+                        var oneOneValue = content.find(".oneOneValue");
+                        oneOneValue.find("label").html(binaryValues[value][3]);
+                        oneOneValue.data("value", binaryValues[value][0]);
+                        if (binaryValues[value][3] == 1) { oneOneValue.find(".clusterValueContainer").addClass("selectableValueSolution"); }
+                        else { oneOneValue.find(".clusterValueContainer").removeClass("selectableValueSolution"); }
+                        oneOneValue.data("quad", "11");
+
+                        $.d.ProcessArray(content.find(".selectableValueSolution"), item => {
+                            var si = $(item);
+                            si.on("click", () => { t.SelectSolution(si); });
+                        });
+
+                    });
+                });
+            },
+
+            DeselectSolution: function (solution) {
+                var t = this;
+                solution.removeClass("selectedValueSolution");
+            },
+
+            SelectSolution: function (solution) {
+                var t = this;
+                var cell = $(solution.closest(".mapCell"));
+                if (solution.hasClass("selectedValueSolution")) {
+                    t.DeselectSolution(solution);
+                    return;
+                }
+                else {
+                    var selected = cell.find(".selectedValueSolution");
+                    if (selected.length > 0) { t.DeselectSolution($(selected)); }
+                }
+
+                //var indices = t.table.code.GetContentIndices(solution);
+                //var isLeft = false;
+                //if (solution.data("quad") == "00" || solution.data("quad") == "10") { isLeft = true; }
+
+                //$.d.Iterate(1, t.table.code.GetRowCount() - 1, i => {
+                //    var content = t.table.code.GetContent(indices.column, i);
+                //    if (isLeft) {
+                //        content.find(".leftColumnCellSelect").removeClass("invisible");
+                //        if (content.find(".zeroZeroValue").data("value") == 1) { content. }
+                //    }
+                //    else {
+                //        content.find(".leftColumnCellSelect").removeClass("invisible");
+                //    }
+                //});
+                solution.addClass("selectedValueSolution");
+            }
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidReverseKarnaughMap {
+            display: inline-block;
+            /*background: rgba(255,255,255,.9);*/
+            background-color: rgba(0,0,0,.5);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .FrigidReverseKarnaughMap * {
+            user-select: none;
+        }
+
+        .FrigidReverseKarnaughMap .functionInputContainer{
+            float:left;
+            /*height:calc(100% - 100px);*/
+            /*height:calc(100% - 800px);*/
+            width:500px;
+            border:solid 1px black;
+            display:inline-block
+        }
+
+        .FrigidReverseKarnaughMap .karnaughMapContainer{
+            float:left;
+            height:calc(100%);
+            width:calc(100% - 500px);
+            /*border:solid 1px green;*/
+            /*overflow:scroll;*/
+
+        }
+
+        .FrigidReverseKarnaughMap .functionManagerContainer{
+            height:270px;
+            float:left;
+            width:100%;
+        }
+        
+        .FrigidReverseKarnaughMap .expressionImportContainer{
+            float:left;
+            display:inline-block;
+            width:100%;
+            margin-top:5px;
+            border-top:solid 1px lightgray;
+            background: rgba(255,255,255,.9);
+        }
+        .FrigidReverseKarnaughMap .expressionManagerContainer{
+            height:270px;
+            display:inline-block;
+            width:100%;
+        }
+
+
+        .FrigidReverseKarnaughMap .importExpressions{
+            margin-top:3px;
+            margin-bottom:3px;
+            margin-left:5px;
+        }
+
+        .FrigidReverseKarnaughMap .expressionOptionsContainer{
+            float:left;
+            display:inline-block;
+            width:100%;
+        }
+
+        .FrigidReverseKarnaughMap .inputTruthTableContainer{
+            float:left;
+            display:inline-block;
+            width:100%;
+            margin-top:5px;
+        }
+
+        .FrigidReverseKarnaughMap .functionSelectionContainer{
+            width:calc(100% - 50px);
+            margin-left:10px;
+            font-size:20px;
+        }
+
+        .FrigidReverseKarnaughMap .operatorSelectionContainer{
+            /*width:100%;*/
+            margin-top:2px;
+            font-size:20px;
+        }
+
+        .FrigidReverseKarnaughMap .functionDisplayContainer{
+            height:30px;
+        }
+
+        .FrigidReverseKarnaughMap .expressionLabelContainer {
+            width: 100%;
+            padding-left: 20px;
+        }
+
+        .FrigidReverseKarnaughMap .expressionInputContainer  {
+            padding-left:10px;
+        }
+
+        .FrigidReverseKarnaughMap .expressionInputContainer > input {
+            width: calc(100% - 10px);
+        }
+
+        .FrigidReverseKarnaughMap .renderedExpressionContainer{
+            width: 100%;
+            height:30px;
+            padding-left:10px;
+        }
+
+        .FrigidReverseKarnaughMap .divisionContainer {
+            border: solid 1px darkgray;
+            padding-top:2px;
+            padding-bottom:2px;
+            display:inline-block;
+            width:100%;
+        }
+
+        .FrigidReverseKarnaughMap .divisionContainer > * {
+            float: left;
+            margin-left: 10px;
+        }
+        
+        .FrigidReverseKarnaughMap .variablesSelectorContainer{
+            display:inline-block;
+            width:100%;
+            margin-top:2px;
+        }
+        .FrigidReverseKarnaughMap .variablesSelectorContainer >*{
+            float:left;
+            margin-right: 10px;
+            margin-top:8px;
+        }
+        .FrigidReverseKarnaughMap .factoredFunctionLabel{
+            font-size:20px;
+            font-weight:bold;
+        }
+
+        .FrigidReverseKarnaughMap .functionEquationSelectionLabel {
+            display:inline-block;
+        }
+
+        .FrigidReverseKarnaughMap .functionEquationSelectionLabel > *{
+            float:left;
+        }
+
+        .FrigidReverseKarnaughMap .factoredVariables {
+            border: solid 1px black;
+            height:30px;
+            min-width: 20px;
+            background-color:#d3e9f3;
+        }
+
+        .FrigidReverseKarnaughMap .remainingVariables {
+            border: solid 1px black;
+            height:30px;
+            min-width: 20px;
+            display:inline-block;
+            background-color:#d3e9f3;
+        }
+
+        .FrigidReverseKarnaughMap .factorVariableDivider {
+            /*padding-top:4px;*/
+        }
+
+        .FrigidReverseKarnaughMap .tableContainer {
+            overflow-y: scroll;
+            overflow-x: scroll;
+            width: 800px;
+            height: 800px;
+            padding: 10px;
+            background-color:black;
+            /*background: linear-gradient(135deg, #000000 0%,#9fc8d9 60%,#9fd8ef 77%,#000000 100%);*/
+        }
+
+        .FrigidReverseKarnaughMap .columnHeaderCell{
+            text-align:center;
+            margin-left:1px;
+            margin-right:2px;
+            margin-bottom:2px;
+        }
+        .FrigidReverseKarnaughMap .factoredHAddress{
+            width:calc(100% - 10px);
+            margin-left:5px;
+            border-bottom:solid 1px lightgray;
+            font-size:16px;
+            font-weight:bold;
+            border-top-left-radius:3px;
+            border-top-right-radius:3px;
+            border:solid 1px lightgray;
+            background-color:rgba(200,220,255, 1);
+            height:22px;
+        }
+        .FrigidReverseKarnaughMap .factoredHValues {
+            width:100%;
+            display:inline-block;
+            font-weight:bold;
+            font-size:16px;
+            border-radius:3px;
+            background-color:#f7fb9f;
+            height:20px;
+        }
+        .FrigidReverseKarnaughMap .factoredHZeroValue {
+            width:16px;
+            float:left;
+            margin-left:7px;
+            text-align:left;
+        }
+        .FrigidReverseKarnaughMap .factoredHOneValue {
+            width:16px;
+            float:right;
+            margin-right:7px;
+            text-align:right;
+        }
+
+        .FrigidReverseKarnaughMap .rowHeaderCell{
+            text-align:center;
+            margin-top:0px;
+            display:inline-block;
+            width:100%;
+        }
+        .FrigidReverseKarnaughMap .factoredGAddress{
+            display:inline-block;
+            width:calc(100% - 18px);
+            float:left;
+            border:solid 1px lightgray;
+            height:22px;
+            margin-top:20px;
+            font-weight:bold;
+            font-size:16px;
+            border-top-left-radius:3px;
+            border-bottom-left-radius:3px;
+            background-color:rgba(180,255,180, 1);
+        }
+        .FrigidReverseKarnaughMap .factoredGValues {
+            float:left;
+            display:inline-block;
+            font-weight:bold;
+            font-size:16px;
+            padding:4px;
+            height:calc(100% - 3px);
+            border-top:solid 1px rgba(0,0,0,0);
+            border-bottom:solid 1px rgba(0,0,0,0);
+            margin-top:1px;
+            border-radius:3px;
+            background-color:#f7fb9f;
+        }
+        .FrigidReverseKarnaughMap .factoredGZeroValue {
+            width:100%;
+            margin-top:-2px;
+        }
+        .FrigidReverseKarnaughMap .factoredGOneValue {
+            width:100%;
+            margin-top:12px;
+        }
+
+        .FrigidReverseKarnaughMap .mapCell {
+            /*border:solid 1px darkgray;*/
+            display:inline-block;
+        }
+        .FrigidReverseKarnaughMap .mapCell .mapCellBackground{
+            position:relative;
+            top:0;
+            width:100%;
+            height:100%;
+            display:inline-block;
+        }
+        .FrigidReverseKarnaughMap .mapCell .mapCellBackground > div{
+            float:left;
+            margin-left:1px;
+            margin-top:1px;
+            background-color:white;
+            width:calc(100% - 3px);
+            height:calc(100% - 3px);
+        }
+        .FrigidReverseKarnaughMap .mapCell .columnCellSelectLine{
+            position:relative;
+            width:100%;
+            height:100%;
+            top:0;
+        }
+        .FrigidReverseKarnaughMap .mapCell .leftColumnCellSelect{
+            top:-61px;
+            background:linear-gradient(90deg, transparent 0%, transparent 12%, purple 14%, transparent 16%, transparent 100%);
+        }
+        .FrigidReverseKarnaughMap .mapCell .rightColumnCellSelect{
+            top:-122px;
+            background:linear-gradient(90deg, transparent 0%, transparent 88%, purple 90%, transparent 92%, transparent 100%);
+        }
+        .FrigidReverseKarnaughMap .mapCell .topRowCellSelect{
+            top:-183px;
+            background:linear-gradient(0deg, transparent 0%, transparent 88%, purple 90%, transparent 92%, transparent 100%);
+        }
+        .FrigidReverseKarnaughMap .mapCell .bottomRowCellSelect{
+            top:-244px;
+            background:linear-gradient(0deg, transparent 0%, transparent 10%, purple 12%, transparent 14%, transparent 100%);
+        }
+
+        .FrigidReverseKarnaughMap .mapCell .centralValue {
+            border-radius: 20px;
+            /*float: left;*/
+            padding-left: 6px;
+            padding-top: 1px;
+            height: 23px;
+            width: 23px;
+            /*margin-left: 18px;*/
+            /*margin-top: -41px;*/
+            background-color: white;
+            border: solid 1px darkgray;
+            position:relative;
+            top:-347px;
+            left:18px;
+            display:inline-block;
+        }
+        
+        .FrigidReverseKarnaughMap .mapCell .centralValue:hover {
+            /*background-color: yellow;*/
+        }
+        .FrigidReverseKarnaughMap .mapCell .centralValueZero {
+            border: solid 1px red;
+        }
+        .FrigidReverseKarnaughMap .mapCell .centralValueOne {
+            border: solid 1px blue;
+        }
+        
+
+        .FrigidReverseKarnaughMap .mapCell .valueCluster {
+            /*float:left;*/
+            /*display:inline-block;*/
+            /*position:relative;*/
+            float: left;
+            /*margin-top:-18px;*/
+            border: solid 1px transparent;
+            position:relative;
+            top:-305px;
+        }
+
+        .FrigidReverseKarnaughMap .mapCell .valueCluster > * {
+            border: solid 1px lightGray;
+            float: left;
+            width: 29px;
+            height: 29px;
+            /*background-color: white;*/
+            /*position:relative;*/
+        }
+        
+        .FrigidReverseKarnaughMap .clusterValueQuadrant{
+            display:inline-block;
+        }
+        .FrigidReverseKarnaughMap .clusterValueQuadrant > .selectableValueSolution:hover{
+            background-color:yellow;
+            border:solid 1px black;
+            cursor:pointer;
+        }
+        .FrigidReverseKarnaughMap .clusterValueQuadrant > .selectableValueSolution *{
+            cursor:pointer;
+        }
+        .FrigidReverseKarnaughMap .clusterValueQuadrant > .selectedValueSolution{
+            background: linear-gradient(0deg, #ffa4fa 0%, #ffa4fa 100%);
+            border:solid 1px black;
+        }
+
+        .FrigidReverseKarnaughMap .clusterValueContainer{
+            text-align:center;
+            border:solid 1px transparent;
+            border-radius:12px;
+            width:20px;
+            height:20px;
+        }
+        .FrigidReverseKarnaughMap .clusterValueContainer:hover{
+            /*border:solid 1px black;*/
+        }
+
+
+        .FrigidReverseKarnaughMap .zeroZeroValue .clusterValueContainer {
+            margin-top:2px;
+            margin-left:2px;
+            float:left;
+        }
+
+        .FrigidReverseKarnaughMap .zeroOneValue  .clusterValueContainer{
+            margin-top:2px;
+            margin-right:2px;
+            float:right;
+        }
+
+        .FrigidReverseKarnaughMap .oneZeroValue .clusterValueContainer{
+            margin-top:6px;
+            margin-left:2px;
+            float:left;
+        }
+        
+        .FrigidReverseKarnaughMap .oneOneValue  .clusterValueContainer{
+            margin-top:6px;
+            margin-right:2px;
+            float:right;
+        }
+
+        .FrigidReverseKarnaughMap .variableSelectionContainer{
+            text-align:center;
+            /*padding:4px;*/
+            float:left;
+            border:solid 1px lightgray;
+            /*width:28px;*/
+            height:24px;
+            margin:2px;
+            background-color:white;
+            padding-left:8px;
+            padding-right:8px;
+            cursor:pointer;            
+        }
+        
+        .FrigidReverseKarnaughMap .variableSelectionContainer:hover{
+            background-color:yellow;
+        }
+        .FrigidReverseKarnaughMap .variableSelectionContainer *:hover{
+            background-color:yellow;
+        }
+
+        /*.FrigidReverseKarnaughMap  .rKMapContainer{
+            display:inline-block;
+            height:calc(95%);
+        }
+        
+        .FrigidReverseKarnaughMap  .rKMapGFunctionName{
+            float:left;
+            min-height:100px;
+            width:30px;
+            height:100%;
+            background-color:#f7fb9f;
+        }
+        .FrigidReverseKarnaughMap  .rKMapHFunctionName{
+
+
+        }
+        .rKMapRightSide{
+            width:calc(100% - 30px);
+            float:left;
+            display:inline-block;
+        }*/
+
+        .functionNameCell{
+            width:100%;
+            height:100%;
+            display:inline-block;
+            background: linear-gradient(30deg, rgba(180,255,180, 1) 0%, rgba(180,255,180, 1) 49%, black 49.5%, black 51.5%, rgba(200,220,255, 1) 52%, rgba(200,220,255, 1) 100%);
+            border-radius:5px;
+        }
+        .functionGNameLabel{
+            float:left;
+            padding-left:4px;
+            width:50%;
+            height:100%;
+            padding-top:14px;
+            text-align:left;
+            font-size:24px;
+        }
+        .functionHNameLabel{
+            float:left;
+            width:50%;
+            height:100%;
+            margin-top:-2px;
+            padding-right:4px;
+            text-align:right;
+            font-size:24px;
+        }
+
+    </style>
+
+</div>

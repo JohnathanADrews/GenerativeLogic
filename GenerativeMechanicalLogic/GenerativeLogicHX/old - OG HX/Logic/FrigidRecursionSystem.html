@@ -1,0 +1,455 @@
+﻿<div>
+
+    <div class="systemHeader">
+        <div><label>System:</label></div>
+        <div class="systemSelector"><select></select></div>
+    </div>
+
+    <div class="systemDisplay">
+        <div class="variablesContainer"></div>
+        <div class="functionsContianer"></div>
+    </div>
+
+    <div class="systemInteractor">
+        <div class="interactorHeader">
+            <div class="interactorLength"><label>Length</label></div><div class="interactorLengthValue"></div>
+            <div class="repetitionCount"><label>Rep Systems</label></div><div class="repetitionCountValue"></div>
+            <div class="modeSelector"></div>
+        </div>
+        <div class="interactorTable"></div>
+    </div>
+
+    <div class="templates">
+        <div class="repetitionIncrementor"></div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidRecursionSystem() {
+            this.title = "Recursion System";
+            
+            this.lead = null;
+            this.length = 5;
+
+            this.system = null;
+            this.variablesContainer = null;
+            this.functionsContianer = null;
+            this.systemOptionsContianer = null;
+
+            this.interactorVariables = null;
+            this.interactorRecursions = null;
+
+            this.values = {};
+            this.rendered = false;
+
+            this.interactorTable = null;
+            this.repetitionCount = 0;
+
+            this.repetitionMode = null;
+
+            this.serializedSystems = {};
+            this.systemSelector = null;
+        }
+        FrigidRecursionSystem.RepetitionMode = {};
+        FrigidRecursionSystem.RepetitionMode.Independent = "FrigidRecursionSystem.RepetitionMode.Independent";
+        FrigidRecursionSystem.RepetitionMode.Cumulative = "FrigidRecursionSystem.RepetitionMode.Cumulative";
+
+        FrigidRecursionSystem.prototype = {
+
+            Start: function () {
+                var t = this;
+                
+                t.variablesContainer = t.principal.find("> .systemDisplay > .variablesContainer");
+                t.functionsContianer = t.principal.find("> .systemDisplay > .functionsContianer");
+                t.systemOptionsContianer = t.principal.find("> .systemOptions");
+                
+                t.systemInteractor = t.principal.find("> .systemInteractor");
+
+                t.interactorTable = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.systemInteractor.find("> .interactorTable").append(t.interactorTable.view);
+                
+                t.lengthEditor = $.h.app.presentation.instance.getIntegerEditor();
+                t.lengthEditor.code.SetValue(t.length);
+                t.lengthEditor.code.SetUpdate(() => { t.UpdateLength(t.lengthEditor.code.GetValue()); });
+                t.systemInteractor.find(".interactorLengthValue").append(t.lengthEditor.view);
+                
+                t.repetitionCountEditor = $.h.app.presentation.instance.getIntegerEditor();
+                t.repetitionCountEditor.code.SetValue(t.repetitionCount);
+                t.repetitionCountEditor.code.SetUpdate(() => {
+                    var repetitions = t.repetitionCountEditor.code.GetValue() + 1 - t.interactorTable.code.GetRowCount();
+                    $.d.ProcessIterator(1, repetitions, i => { t.AddRepetition(); });
+                    if (repetitions < 0) {
+                        repetitions = repetitions * -1;
+                        repetitions = repetitions >= t.interactorTable.code.GetRowCount() - 1 ? t.interactorTable.code.GetRowCount() - 1 : repetitions;
+                        t.interactorTable.code.DeleteBottomRows(repetitions);
+                        t.repetitionCount -= repetitions;
+                    }
+                    t.Update();
+                });
+                t.systemInteractor.find(".repetitionCountValue").append(t.repetitionCountEditor.view);
+
+                t.repetitionModeUpdater = () => {
+                    var repetitions = 0;
+                    var rowRepetitions = 0;
+                    $.d.ProcessIterator(1, t.interactorTable.code.GetRowCount() - 1, i => {
+                        $.d.ProcessIterator(0, t.interactorTable.code.GetColumnCount() - 1, j => {
+                        if (j == 0) {
+                            rowRepetitions = $(t.interactorTable.code.GetContent(0, i).find("> .IntegerEditor")).data("code").GetValue();
+                            if (rowRepetitions == null) { rowRepetitions = 1; }
+                            return;
+                        }
+                            var content = t.interactorTable.code.GetContent(j, i);
+                            if (content == null) { return; }
+                            var series = content.data("code");
+                            if (series == null) { return; }
+                            series.SetRepetition(repetitions + rowRepetitions);
+                        });
+                        repetitions += rowRepetitions;
+                    });
+                    t.SetSeriesWidth();
+                    t.Update();
+                };
+
+                t.systemSelector = t.principal.find(".systemSelector select");
+                t.systemSelector.on("change", () => {
+                    var pair = t.systemSelector.find("option:selected").data("series");
+                    console.log("FrigidRecursionSystem.systemSelector - ", pair);
+                    t.system = RecursionSystem.ParseFreeform(pair.value);
+                    t.Render();
+                    var reps = t.repetitionCount;
+                    t.repetitionCount = 0;
+                    $.d.ProcessIterator(1, reps, i => { t.AddRepetition(); });
+                    t.Update();
+                });
+            },
+
+            Render: function () {
+                var t = this;
+                t.interactorTable.code.Clear();
+                t.interactorTable.code.SetBaseRowHeight(80);
+                t.interactorTable.code.SetColumnWidth(0, 80);
+                if (t.system == null) {
+                    var pair = t.systemSelector.find("option:selected").data("series");
+                    if (pair == null) { return; }
+                    t.system = RecursionSystem.ParseFreeform(pair.value);
+                }
+                if (t.system == null) { return; }
+
+                console.log("FrigidRecursionSystem.Render - ", t.system);
+                t.system.SetupProcessOrder();
+
+                t.variablesContainer.empty();
+                t.functionsContianer.empty();
+                var columnCount = t.system.variables.length > t.system.functions.length ? t.system.variables.length : t.system.functions.length;
+
+                t.interactorTable.code.AppendRow();
+                t.interactorTable.code.AppendColumns(columnCount + 1);
+                t.interactorTable.code.SetContent(0, 0, $("<div class='groupRepetitionsLabel'><label>Reps</label></div>"));
+                
+
+                var variableIndex = 1;
+                $.d.ProcessArray(t.system.variables, variable => {
+                    var set = $.h.app.presentation.logic.getFrigidOrderedBitSet();
+                    set.code.series = variable;
+                    t.variablesContainer.append(set.view);
+                    set.code.Render();
+                    
+                    var presenter = $.h.app.presentation.logic.getFrigidBitSetVariable();
+                    presenter.code.length = t.length;
+                    presenter.code.isInjector = variable.isInjector;
+                    presenter.code.series = variable;
+                    variable.presenter = presenter;
+                    presenter.code.Render();
+                    if (variable.isInjector == true) {
+                        t.interactorTable.code.SetContent(columnCount, 0, presenter.view);   
+                    }
+                    else {
+                        t.interactorTable.code.SetContent(variableIndex,0,presenter.view);  
+                        variableIndex++;
+                    }                 
+                    presenter.code.SetIntegerUpdater(value => { t.Update(); });
+
+                });
+                $.d.ProcessIterator(variableIndex, columnCount - 1, j => { t.interactorTable.code.BlankCell(j, 0); });
+
+                //Renders the seies definition.
+                var renderer = recursion => {
+                    var recursive = $.h.app.presentation.logic.getFrigidRecursiveFunction();
+                    recursive.code.recursiveFunction = recursion;
+                    t.functionsContianer.append(recursive.view);
+                    recursive.code.Render();
+                };
+
+                //display lead first.
+                renderer(t.system.lead);
+                //display non-lead functions.
+                $.d.ProcessArray(t.system.functions, recursion => {
+                    if (recursion.isLead === true) { return ; }
+                    renderer(recursion);
+                });
+
+                //t.SetSeriesWidth();
+                //if (t.repetitionCount > 0) { return; }
+
+                t.SetSeriesWidth();
+                //t.repetitionModeUpdater();
+                
+                t.rendered = true;
+            },
+
+            AddRepetition: function () {
+                var t = this;            
+                var repetitionIndex = ++t.repetitionCount;
+                t.interactorTable.code.AppendRow();
+                var recursionIndex = 1;
+
+                
+                var repEditor = $.h.app.presentation.instance.getIntegerEditor();
+                repEditor.code.SetValue(1);
+                repEditor.code.SetUpdate(() => { t.repetitionModeUpdater(); });
+                var repContainer = t.CreateTemplate("repetitionIncrementor");
+                repContainer.append(repEditor.view);
+                t.interactorTable.code.SetContent(0, repetitionIndex, repContainer);
+
+                $.d.ProcessArray(t.system.processOrder, recursion => {
+                    var presenter = $.h.app.presentation.logic.getFrigidBitSetVariable();
+                    presenter.code.length = t.length;
+                    //if (t.repetitionMode == FrigidRecursionSystem.RepetitionMode.Independent) { presenter.code.repetition = repetitionIndex; }
+                    //if (t.repetitionMode == FrigidRecursionSystem.RepetitionMode.Cumulative) { }                    
+                    presenter.code.series = recursion.series;                
+                    presenter.code.SetEditable(false);
+                    presenter.code.isLead = recursion.isLead;
+                    presenter.code.SetRepetition(repetitionIndex);
+                    presenter.code.Render();
+                    if (recursion.isLead) {
+                        t.interactorTable.code.SetContent(t.system.functions.length, repetitionIndex, presenter.view);
+                    }
+                    else {
+                        t.interactorTable.code.SetContent(recursionIndex, repetitionIndex, presenter.view);
+                        recursionIndex++;
+                    }
+                    //console.log("FrigidRecursionSystem.AddRepetition - ", repetitionIndex,  recursion, " - ");
+                });
+            },
+            
+            Update: function () {
+                var t = this;
+                if (!t.rendered) { return; }
+                var intermediate = {};
+                var variables = {};
+                $.d.ProcessArray(t.system.variables, variable => {
+                    intermediate[variable.name] = variable.presenter.code.GetBits();
+                    t.values[variable.name] = variable.presenter.code.GetBits();
+                    variables[variable.name] = variable.presenter.code;
+                });
+                var indices = {};
+                var recursions = {};
+                var order = [];
+                $.d.ProcessArray(t.system.functions, recursion => { if (!recursion.isLead) { order.push(recursion); } });
+                order.push(t.system.lead);
+                $.d.ProcessArray(order, recursion => {
+                    intermediate[recursion.series.name] = [];
+                    indices[recursion.series.name] = 0;
+                    recursions[recursion.series.name] = {};
+                    recursions[recursion.series.name].bitSeries = null;
+                    recursions[recursion.series.name].recursion = recursion;
+                });
+
+                var injector = null;
+                var processVariables = [];
+                $.d.ProcessArray(t.system.variables, variable => {
+                    var pv = { name: variable.name, values: variable.presenter.code.GetBits() };
+                    if (variable.isInjector) { injector = pv; }
+                    processVariables.push(pv);
+                });
+                
+                //console.log("FrigidRecursionSystem.SetupUpdateOrder - intermediate - ", intermediate);
+                //console.log("FrigidRecursionSystem.SetupUpdateOrder - values - ", t.values, " - ", indices, " - ", 1);
+                //console.log("FrigidRecursionSystem.SetupUpdateOrder - functions - ", t.system.functions);
+                //console.log("FrigidRecursionSystem.SetupUpdateOrder - recursions - ", recursions);
+                //console.log("FrigidRecursionSystem.SetupUpdateOrder - system - ", t.system);
+
+                var rowRepetitions = 0;
+                $.d.ProcessIterator(1, t.interactorTable.code.GetRowCount() - 1, i => {
+                    $.d.ProcessIterator(0, t.system.functions.length, j => {
+                        if (j == 0) {
+                            rowRepetitions = $(t.interactorTable.code.GetContent(0, i).find("> .IntegerEditor")).data("code").GetValue();
+                            return;
+                        }
+                        var code = $(t.interactorTable.code.GetContent(j, i)).data("code");
+                //console.log("FrigidRecursionSystem.SetupUpdateOrder - recursions.cell - ", t.interactorTable.code.GetContent(j, i));
+                //console.log("FrigidRecursionSystem.SetupUpdateOrder - recursions.code - ", code);
+                        recursions[code.series.name].bitSeries = code;
+                    });
+                    //Add functionality to handle zero repetitions.
+                    var result = t.system.ProcessRepetitions(t.length, rowRepetitions, processVariables);
+                    $.d.ProcessArray($.d.GetObjectMemberValues(recursions), recursion => {
+                        recursion.bitSeries.SetBits(result[recursion.recursion.series.name]);
+                    });
+                    
+                    $.d.ProcessIterator(0, t.length - 1, j => {
+                        injector.values[j] = result[t.system.lead.series.name][j];
+                    });
+                });
+            },
+
+            SetSeriesWidth: function () {           
+                var t = this;
+                var width = 0;
+                $.d.ProcessIterator(1, t.interactorTable.code.GetColumnCount() - 1, j => {
+                    return $.d.ProcessIterator(0, t.interactorTable.code.GetRowCount() - 1, i => {
+                        var content = t.interactorTable.code.GetContent(j, i);
+                        if (content == null || content.length == 0) { return; }
+                        var code = content.data("code");
+                        if (code == null) { return; }
+                        width = width < code.GetWidth() ? code.GetWidth() : width;
+                        //if (width == 0) { width = code.GetWidth(); return false; }
+                    });
+                });
+                t.interactorTable.code.SetBaseColumnWidth(width);
+            },
+
+            UpdateLength: function (length) {
+                var t = this;
+                t.length = length;
+                //var baseWidth = 0;
+
+                $.d.ProcessIterator(1, t.interactorTable.code.GetColumnCount() - 1, j => {
+                    $.d.ProcessIterator(0, t.interactorTable.code.GetRowCount() - 1, i => {
+                        var content = t.interactorTable.code.GetContent(j, i);
+                        if (content == null) { return; }
+                        var code = $(t.interactorTable.code.GetContent(j, i)).data("code");
+                        if (code == null) { return; }
+                        code.SetLength(length);
+                        //if (baseWidth == 0) { baseWidth = code.GetWidth(); }
+                    });
+                });
+                t.SetSeriesWidth();
+                t.Update();
+                    //console.log("FrigidRecursionSystem.UpdateLength - ", length,  baseWidth);
+                //t.interactorTable.code.SetBaseColumnWidth(baseWidth);
+                //$.d.ProcessIterator(1, )
+
+            },
+
+            AddSystem: function (namedSerialization) {
+                var t = this;
+                t.serializedSystems[namedSerialization.name] = namedSerialization.value;
+                var option = $("<option></option>");
+                option.html(namedSerialization.name);
+                option.data("series", namedSerialization);
+                t.principal.find(".systemSelector select").append(option);
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidRecursionSystem {
+            display:inline-block;
+            background: rgba(255,255,255,.9);
+        }
+        .FrigidRecursionSystem > .systemDisplay{
+            width:calc(100% - 0px);
+            display:inline-block;
+            overflow:hidden;
+            float:left;
+            border:solid 2px;
+            margin-right:2px;
+        }
+
+        .FrigidRecursionSystem > .systemInteractor{
+            width:calc(100% - 0px);
+            display:inline-block;
+            overflow:hidden;
+            float:left;
+            border:solid 2px;
+            margin-right:2px;
+        }
+        .FrigidRecursionSystem > .systemHeader{
+            width:100%;
+            display:inline-block;
+            overflow:hidden;
+            border:solid 2px;
+            padding-top:4px;
+            padding-bottom:4px;
+        }
+        .FrigidRecursionSystem > .systemHeader > *{
+            float:left;
+            margin-left:10px;
+        }
+
+
+        .FrigidRecursionSystem > .systemOptions > .displayOption:hover {
+            background: linear-gradient(0deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.8) 100%);
+        }
+        .FrigidRecursionSystem > .systemDisplay > .variablesContainer > * {
+            margin-right:20px;
+        }
+        .FrigidRecursionSystem > .systemDisplay > .functionsContianer > * {
+            width:100%;
+        }
+
+        .FrigidRecursionSystem .interactorHeader{
+            padding-left:40px;
+            padding-top:10px;
+            padding-bottom:0px;
+            display:inline-block;
+            height:44px;
+            width:100%;
+        }
+        .FrigidRecursionSystem .interactorHeader > *{
+            float:left;
+            margin-right:10px;
+        }
+
+        .FrigidRecursionSystem .interactorHeader .modeSelector {
+            width:calc(100% - 400px);
+        }
+            
+
+        .FrigidRecursionSystem .interactorLength{
+            font-size: 20px;
+            padding-top:3px;
+        }
+        .FrigidRecursionSystem .interactorLengthValue{
+            font-size:25px;
+        }
+        .FrigidRecursionSystem .interactorLengthValue input{
+            width:65px;
+        }
+        
+
+        .FrigidRecursionSystem .repetitionCount{
+            font-size: 20px;
+            padding-top:3px;
+            margin-left:20px;
+        }
+        .FrigidRecursionSystem .repetitionCountValue{
+            font-size:25px;
+        }
+        .FrigidRecursionSystem .repetitionCountValue input{
+            width:65px;
+        }
+
+        .FrigidRecursionSystem .groupRepetitionsLabel{
+            padding-top:34px;
+            padding-left:10px;
+            font-size:20px;
+        }
+
+        .FrigidRecursionSystem  .repetitionIncrementor{
+            padding-top:34px;
+            padding-left:10px;
+            font-size:20px;
+        }
+
+        .FrigidRecursionSystem  .repetitionIncrementor input{
+            width:65px;
+        }
+
+    </style>
+
+</div>

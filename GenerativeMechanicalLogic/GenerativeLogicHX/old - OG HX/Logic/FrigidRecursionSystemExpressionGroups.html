@@ -1,0 +1,261 @@
+﻿<div>
+
+    <div class="frigidSystemSelector"></div>
+    <div class="frigidDefinition"></div>
+    <div class="frigidSeriesSelector"></div>
+    <select>
+        <option>Base</option>
+        <option>Rendered</option>
+        <option>Simplified</option>
+    </select>
+    <div class="interactorTable"></div>
+
+    <div class="expressionDisplay"></div>
+
+    <div class="templates">
+        <div class="groupIndex"><label></label></div>
+        <div class="bitIndex"><label></label></div>
+        <div class="groupHeader"><label>Group</label></div>
+        <div class="instanceExpression"><div></div></div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidRecursionSystemExpressionGroups() {
+            this.title = "System Expression Groups";
+
+            this.system = null;
+            this.selectedSeries = null;
+            this.length = 3;
+
+            this.systemSelector = null;
+            this.seriesSelector = null;
+            this.definition = null;
+            this.interactor = null;
+            this.expressionDisplay = null;
+        }
+
+        FrigidRecursionSystemExpressionGroups.prototype = {
+
+            Start: function () {
+                var t = this;
+
+                t.expressionDisplay = t.principal.find(".expressionDisplay");
+
+                t.definition = $.h.app.presentation.logic.getFrigidRecursionSystemDefinition();
+                t.principal.find("> .frigidDefinition").append(t.definition.view);
+
+                t.systemSelector = $.h.app.presentation.logic.getFrigidSystemSelector();
+                t.principal.find("> .frigidSystemSelector").append(t.systemSelector.view);
+                t.systemSelector.code.SetUpdate(serialized => {
+                    console.log("FrigidRecursionSystemExpressionGroups.Start - ", serialized);
+                    t.definition.code.SetSystem(serialized);
+                    t.system = RecursionSystem.ParseFreeform(serialized.value);
+                    t.UpdateSeriesSelector();
+                    t.UpdateGroupTable();
+                });
+
+                t.seriesSelector = $.h.app.presentation.logic.getFrigidSeriesSelector();
+                t.principal.find("> .frigidSeriesSelector").append(t.seriesSelector.view);
+                t.seriesSelector.code.SetUpdate(series => {
+                    t.selectedSeries = series;
+                    t.UpdateGroupTable();
+                });
+
+                t.interactor = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.principal.find("> .interactorTable").append(t.interactor.view);
+
+            },
+
+            Render: function () {
+                var t = this;
+                t.UpdateGroupTable();
+            },
+
+            UpdateGroupTable: function () {
+                var t = this;
+                t.interactor.code.Clear();
+
+                t.interactor.code.AppendColumns(t.length + 2);
+                t.interactor.code.AppendRows(t.length + 2);
+
+                t.interactor.code.SetBaseColumnWidth(146);
+                // t.interactor.code.SetBaseColumnWidth(300);
+                t.interactor.code.SetColumnWidth(0, 60);
+                t.interactor.code.SetBaseRowHeight(36);
+                t.interactor.code.SetContent(0, 0, t.CreateTemplate("groupHeader"));
+
+                var columnCount = t.interactor.code.GetColumnCount();
+                var rowCount = t.interactor.code.GetRowCount();
+
+                $.d.ProcessIterator(0, rowCount - 1, i => {
+                    var groupIndex = t.CreateTemplate("groupIndex");
+                    groupIndex.find("label").html(i);
+                    t.interactor.code.SetContent(0, i + 1, groupIndex);
+                });
+                $.d.ProcessIterator(0, columnCount - 2, j => {
+                    var bitIndex = t.CreateTemplate("bitIndex");
+                    bitIndex.find("label").html(columnCount - j - 1);
+                    t.interactor.code.SetContent(j + 1, 0, bitIndex);
+                });
+
+                var displayGroupExpression = (groupIndex, recursionIndex, expression) => {
+                    t.expressionDisplay.empty();
+                    var display = $.h.app.presentation.logic.getFrigidExpressionEquator();
+                    display.code.expression = expression.Clone();
+                    display.code.name = "g";
+                    display.code.subscript = recursionIndex;
+                    display.code.superscript = groupIndex;
+                    display.code.EnableIndexNameMode(false);
+                    display.code.Render();
+                    t.expressionDisplay.append(display.view);
+                };
+
+                $.d.ProcessIterator(1, rowCount - 1, j => {
+                    $.d.ProcessReverseIterator(columnCount - 1, 1, i => {
+                        var groupIndex = j - 1;
+                        var recursionIndex = columnCount - i;
+                        var instanceExpression = t.CreateTemplate("instanceExpression");
+            //            console.log("FrigidRecursionSystemExpressionGroups.Render x76.1 - ",groupIndex, recursionIndex, expression);
+                        var expression = t.system.GetRenderedExpression(t.selectedSeries.name, recursionIndex, groupIndex);
+                        //instanceExpression.html((columnCount - j) + ", " + i);
+                        //if (expression == null || expression.nodes == null) {
+                        //    expression = { root: { nodes: [] } };
+                        //}
+                        //else {
+                        //    expression = { root: expression };
+                        //}
+          //              console.log("FrigidRecursionSystemExpressionGroups.Render x76.2 - ",groupIndex, recursionIndex, expression);
+                        //return;
+                        //console.log("FrigidRecursionSystemExpressionGroups.Render - expression - ", columnCount - j, i, expression);
+                        //var expressionText = instanceExpression.html(LogicalExpression.RenderToText(expression));
+                        var equator = $.h.app.presentation.logic.getFrigidExpression();
+                        //equator.code.name = "G";
+                        //equator.code.subscript = i;
+                        //equator.code.superscript = j;
+                        equator.code.expression = expression;
+                        equator.code.EnableIndexNameMode(false);
+                        equator.code.Render();
+                        //instanceExpression.html($("<label>" + expressionText + "</label>"));
+                        instanceExpression.find("> div").append(equator.view);
+                        instanceExpression.on("click", () => { displayGroupExpression(groupIndex, recursionIndex, expression); });
+                        t.interactor.code.SetContent(i, j, instanceExpression);
+                        if (groupIndex == 0 && recursionIndex == 1) { displayGroupExpression(groupIndex, recursionIndex, expression); }
+                    });
+                });
+
+            },
+
+            AddRepetition: function () {
+                var t = this;
+            },
+
+            Update: function () {
+                var t = this;
+                console.log("FrigidRecursionSystemExpressionGroups." + arguments.callee.name + " - ", t.selectedSeries);
+            },
+
+            UpdateLength: function (length) {
+                var t = this;
+
+            },
+
+            AddSystem: function (namedSerialization) {
+                var t = this;
+                t.systemSelector.code.AddSystem(namedSerialization);
+                if (t.systemSelector.code.GetSystemCount() == 1) {
+                    t.definition.code.SetSystem(namedSerialization);
+                    t.system = RecursionSystem.ParseFreeform(namedSerialization.value);
+                    t.UpdateSeriesSelector();
+                }
+            },
+
+            UpdateSeriesSelector: function () {
+                var t = this;
+                t.seriesSelector.code.Clear();
+                $.d.ProcessArray(t.system.functions, recursion => { t.seriesSelector.code.AddSeries(recursion.series); });
+                t.selectedSeries = t.system.lead.series;
+            }
+
+            //GetSeriesSelector: function () {
+            //    var t = this;
+            //    return (series) => { t.selectedSeries = series; t.Update(); }
+            //}
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidRecursionSystemExpressionGroups {
+            display: inline-block;
+            background: rgba(255,255,255,.9);
+        }
+
+        .FrigidRecursionSystemExpressionGroups .groupHeader {
+            text-align: center;
+            font-size: 14px;
+            /*color:blue;*/
+            height: 100%;
+            padding: 0;
+            padding-top: 8px;
+            background: linear-gradient(180deg, white 0%, white 100%);
+            border: solid 1px gray;
+        }
+
+        .FrigidRecursionSystemExpressionGroups .groupIndex {
+            text-align: center;
+            font-size: 14px;
+            /*color:blue;*/
+            background: linear-gradient(180deg, white 0%, white 100%);
+            height: 100%;
+            padding: 0;
+            padding-top: 10px;
+            border: solid 1px gray;
+        }
+
+        .FrigidRecursionSystemExpressionGroups .bitIndex {
+            text-align: center;
+            font-size: 14px;
+            /*color:blue;*/
+            height: 100%;
+            padding: 0;
+            background: linear-gradient(180deg, white 0%, white 100%);
+            border: solid 1px gray;
+            padding-top: 10px;
+        }
+
+        .FrigidRecursionSystemExpressionGroups .instanceExpression {
+            background: linear-gradient(180deg, rgba(245,252,255,1) 0%, rgba(255,255,255,1) 80%, rgba(255,255,255,1) 100%);
+            height: 100%;
+            /*text-align:center;*/
+            border: solid 1px lightgray;
+            padding-top: 4px;
+            padding-left: 4px;
+            padding-right: 4px;
+            /*justify-content:center;*/
+        }
+
+        .FrigidRecursionSystemExpressionGroups .instanceExpression > * {
+            display: inline-block;
+            float: right;
+        }
+
+        .FrigidRecursionSystemExpressionGroups .interactorTable {
+            font-size: 10px;
+        }
+
+        .FrigidRecursionSystemExpressionGroups .expressionDisplay {
+            border: solid 1px black;
+            padding: 5px;
+            display: inline-block;
+            padding-left:10px;
+            background: linear-gradient(180deg, white 0%, white 100%);
+            max-height:304px;
+            overflow-y:scroll;
+        }
+
+    </style>
+
+</div>

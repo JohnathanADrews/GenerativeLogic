@@ -1,0 +1,74 @@
+﻿
+<hx h-proxy="addView" h-method="addView" />
+<hx h-proxy="selectView" h-method="selectView" />
+<hx h-proxy="remove" h-method="remove" />
+
+<hx h-subscriber="ViewSelected" h-method="viewSelected" />
+<hx h-subscriber="ViewPreviewed" h-method="viewPreviewed" />
+
+<div h-clone="container"></div>
+
+<script>
+
+    function ViewNavigationArray() {
+        this.views = [];
+        this.currentIndex = -1;
+    }
+
+    ViewNavigationArray.prototype = {
+
+        Start: function () {
+            var t = this;
+            this.isFirst = true;
+        },
+
+        addView: function (view) {
+            var t = this;
+            var container = t.hularion.createClone("container");
+            container.view.append(view);
+            this.views.push(container.view);
+            return t.views.length - 1;
+        },
+
+        selectView: function (index) {
+            var t = this;
+            t.remove(index + 1);
+            t.previewView(index);
+        },
+
+        previewView: function (index) {
+            var t = this;
+            if ((index < 0 || index >= t.views.length || t.currentIndex == index) && t.isFirst !== true) { return; }
+            t.isFirst = false;
+            if (t.currentIndex >= 0 && t.currentIndex < t.views.length) { t.views[t.currentIndex].append(t.hularion.principal.children()); }
+            t.hularion.principal.append(t.views[index].children());
+            t.currentIndex = index;
+        },
+
+        remove: function (index) {
+            var t = this;
+            var count = t.views.length - index;
+            if (count <= 0) {
+                return;
+            }
+            t.views.splice(index, count);
+        },
+
+        viewSelected: function (index) {
+            this.selectView(index);
+        },
+
+        viewPreviewed: function (index) {
+            var t = this;
+            this.previewView(index);
+        }
+    }
+
+</script>
+
+<style>
+    .this {
+        width: 100%;
+    }
+</style>
+

@@ -1,0 +1,134 @@
+﻿
+<hx h-proxy="setView" h-method="setView" />
+<hx h-system-subscriber="SizeChanged" h-method="sizeChanged" />
+<!--<hx h-component-handler="SetPresenterHandler" h-method="setPresenter" />-->
+
+<script>
+
+    function ViewContainer() {
+        this.navigationArray = null;
+        this.previewedPath = null;
+    }
+
+    ViewContainer.prototype = {
+
+        start: function () {
+            var t = this;
+            console.log("ViewContainer.start - ", t);
+        },
+
+        setPresenter: function (presenter) {
+            this.setView(presenter.view);
+        },
+
+        setView: function (view) {
+            var t = this;
+            t.hularion.principal.empty();
+            t.hularion.principal.append(view);
+        },
+
+        sizeChanged: function (newSize, oldSize) {
+            var t = this;
+            console.log("ViewContainer.SizeChanged - ", newSize, oldSize);
+            //t.lastSize = newSize;
+            //var newHeight = newSize.height;
+            //if (newHeight < t.minimumHeight) { newHeight = t.minimumHeight; }
+            //var offset = newHeight;
+            //if (offset > t.listItems.height()) { offset = t.listItems.height(); }
+            //offset += t.headersContainer.height() - 3;
+
+            //t.listContent.attr("style", "top: -" + offset + "px;");
+            //t.bordersContainer.height(offset);
+
+        }
+    }
+
+</script>
+
+<style>
+    .this * {
+        user-select: none;
+    }
+
+    .pathList {
+        list-style-type: none;
+        text-align: left;
+        display: inline-block;
+    }
+
+        .pathList li {
+            float: left;
+        }
+
+    .segmentName * {
+        cursor: pointer;
+    }
+
+    .segmentSeparator {
+        cursor: default;
+    }
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+    .this {
+        background-color: black;
+    }
+
+    .segmentName > *:hover {
+        color: black;
+        background-color: white;
+    }
+
+    .separator {
+        background: radial-gradient(ellipse at center, rgba(255,255,255,100) 0%,#000000 48%,#000000 52%, rgba(0,0,0,0) 52%, rgba(0,0,0,0) 100%);
+    }
+
+    .previewed {
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 80%, rgba(255, 255, 255, 1) 82%, rgba(255, 255, 255, 1) 83%, rgba(0, 0, 0, 0) 90%);
+    }
+</style>
+
+<style h-style-category-key="Structure" h-style-category-value="Standard">
+    .this > .pathList {
+        padding-left: 5px;
+        padding-right: 5px;
+        margin: 0;
+    }
+
+    .pathList li {
+        margin: 0;
+        padding: 2px;
+    }
+
+    .segmentName * {
+        font-size: 18px;
+    }
+
+    .segmentName {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .segmentSeparator {
+        margin: 6px;
+        padding-top: 4px;
+    }
+
+    .segmentName > *:hover {
+        font-weight: bold;
+        border-radius: 4px;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .separator {
+        width: 15px;
+        height: 15px;
+        margin-top: 3px;
+    }
+</style>
+
+

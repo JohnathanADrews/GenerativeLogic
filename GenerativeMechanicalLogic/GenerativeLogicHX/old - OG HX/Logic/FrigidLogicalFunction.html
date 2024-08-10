@@ -1,0 +1,185 @@
+﻿<div>
+
+    <div class="functionContainer">
+        <div class="functionName"><label></label></div>
+        <div class="indexContainer">
+            <div class="superscriptIndex"><label></label></div>
+            <div class="subscriptIndex"><label></label></div>
+        </div>
+    </div>
+    <div class="assignmentOperator"><label></label></div>
+    <div class="variablesContainer">
+        <div class="variablesLeft"><label>{</label></div>
+        <div class="variablesSet"></div>
+        <div class="variablesRight"><label>}</label></div>
+    </div>
+    <div class="valuesContainer"><label></label></div>
+    <div class="renderedFunctionContainer"><label></label></div>
+
+    <div class="templates">
+        <div class="functionVariable"><label></label></div>
+        <div class="functionVariableSeparator"><label>,</label></div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidLogicalFunction() {
+            this.title = "Logical Function";
+            this.logicalFunction = new LogicalFunction();
+            this.functionContainer = null;
+            this.functionName = null;
+            this.subscriptIndex = null;
+            this.superscriptIndex = null;
+            this.assignmentOperator = null;
+            this.renderedFunctionContainer = null;
+            this.variablesSet = null;
+            this.valuesContainer = null;
+            this.conditions = [];
+            this.assignment = "=";
+            this.bitBreakCount = 4;
+        }
+
+        FrigidLogicalFunction.prototype = {
+
+            Start: function () {
+                var t = this;
+                
+                t.functionContainer = t.principal.find(".functionContainer");
+                t.functionName = t.functionContainer.find(".functionName");
+                t.subscriptIndex = t.functionContainer.find(".subscriptIndex");
+                t.superscriptIndex = t.functionContainer.find(".superscriptIndex");
+                
+                t.assignmentOperator = t.principal.find(".assignmentOperator");
+                t.renderedFunctionContainer = t.principal.find(".renderedFunctionContainer");
+
+                t.variablesSet = t.principal.find(".variablesSet");
+                t.valuesContainer = t.principal.find(".valuesContainer");
+
+            },
+
+            Render: function () {
+                var t = this;
+                t.Update();
+                //t.subscriptIndex.attr("style", "left:" + ( -24 * t.logicalFunction.superscript.length) + ";");
+
+            },
+
+            Update: function () {
+
+                var t = this;
+                t.functionName.find("label").html(t.logicalFunction.name);
+                t.subscriptIndex.find("label").html(t.logicalFunction.subscript);
+                t.superscriptIndex.find("label").html(t.logicalFunction.superscript);
+                t.assignmentOperator.find("label").html(t.assignment);
+                t.variablesSet.empty();
+                $.d.ProcessIterator(0, t.logicalFunction.variables.length - 1, i => {
+                    if (i > 0) { t.variablesSet.append(t.CreateTemplate("functionVariableSeparator"));}
+                    var variable = t.CreateTemplate("functionVariable");
+                    variable.find("label").html(t.logicalFunction.variables[i]);
+                    t.variablesSet.append(variable);
+                });
+
+                t.valuesContainer.html(t.logicalFunction.RenderValueSetToText({ breakCount: t.bitBreakCount }));
+
+
+            },
+
+            Parse: function (text) {
+                var t = this;
+                t.logicalFunction.Parse(text);
+                t.Update();
+            },
+
+            RenderText: function () {
+                var t = this;
+                //console.log("FrigidLogicalFunction.RenderText - ", t.logicalFunction);
+                return t.logicalFunction.RenderToText({breakCount: t.bitBreakCount}); 
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidLogicalFunction {
+            display: inline-block;
+        }
+
+            .FrigidLogicalFunction > * {
+                float: left;
+                margin-right: 8px;
+            }
+
+            .FrigidLogicalFunction .functionContainer{
+                display:inline-block;
+            }
+
+            .FrigidLogicalFunction .functionContainer > *{
+                float:left;
+            }
+
+            .FrigidLogicalFunction .functionName {
+                font-size: 20px;
+                font-weight: 700;
+                padding-top:2px;
+            }
+
+            .FrigidLogicalFunction .indexContainer{
+                height:100%;
+                padding-left:2px;
+            }
+
+            .FrigidLogicalFunction .subscriptIndex {
+                /*float: left;*/
+                font-size: 14px;
+                /*width:100%;*/
+                height:50%;
+            }
+
+            .FrigidLogicalFunction .subscriptIndex > label {
+                margin-top: -4px;
+            }
+
+            .FrigidLogicalFunction .superscriptIndex {
+                /*float: left;*/
+                height:50%;
+                /*width:100%;*/
+                font-size: 14px;
+            }
+
+            .FrigidLogicalFunction .superscriptIndex > label {
+                margin-top: -4px;
+            }
+
+            .FrigidLogicalFunction > .assignmentOperator {
+                font-size: 20px;
+            }
+
+            .FrigidLogicalFunction .variablesContainer{
+                float:left;
+                display:inline-block;
+                padding-top:2px;
+                font-size: 18px;
+            }
+
+            .FrigidLogicalFunction .variablesContainer > *{
+                float:left;
+            }
+            
+            .FrigidLogicalFunction .variablesContainer .variablesSet{
+                float:left;
+                display:inline-block;
+            }
+            .FrigidLogicalFunction .variablesContainer .variablesSet > *{
+                float:left;
+            }
+
+            .FrigidLogicalFunction .valuesContainer{
+                padding-top:2px;
+                font-size: 18px;
+            }
+
+    </style>
+
+</div>

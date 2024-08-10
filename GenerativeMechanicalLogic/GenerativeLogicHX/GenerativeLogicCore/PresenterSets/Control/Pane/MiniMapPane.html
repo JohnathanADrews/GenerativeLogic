@@ -1,0 +1,140 @@
+﻿
+
+<hx h-publisher="ViewChange" /> <!-- As fractions, => { x:x, y:y } -->
+
+<hx h-proxy="setSize" /> <!-- ({ width:x, height:x, xScale:x, yScale}) scale is the fraction of the view that is displayed. -->
+<hx h-proxy="setLocation" /> <!-- (fractionAvailableX, fractionAvailableY)-->
+<hx h-proxy="center" /> 
+
+
+<div class="viewSection" h-handle="viewSection"></div>
+
+
+<script>
+
+    function MiniMapPane() {
+        this.size = null;
+    }
+
+    MiniMapPane.prototype = {
+
+        start: function () {
+            var t = this;
+            console.log("MiniMapPane.start - ", t, window);
+
+            var isDrag = false;
+            var downEvent = null;
+            var moveHandler = (event)=>{
+                if(isDrag === true){
+                    var offset = t.viewSection.offset();
+                    var thisOffset = t.hularion.principal.offset();
+                    var doMove = true;
+
+                    var dx = (offset.left - thisOffset.left) + event.movementX;
+                    if(dx < 0){
+                        dx = 0;
+                    }
+                    if(dx > t.hularion.principal.width() - t.viewSection.width()){
+                        dx = t.hularion.principal.width() - t.viewSection.width();
+                    }
+                    if (event.movementX < 0 && event.clientX > downEvent.maxX) {
+                        doMove = false;
+                    }
+                    if (event.movementX > 0 && event.clientX < downEvent.minX) {
+                        doMove = false;
+                    }
+                    if (doMove) {
+                        t.viewSection.css("left", dx);
+                    }
+
+                    doMove = true;
+                    var dy = (offset.top - thisOffset.top) + event.movementY;
+                    if(dy < 0){
+                        dy = 0;
+                    }
+                    if(dy > t.hularion.principal.height() - t.viewSection.height()){
+                        dy = t.hularion.principal.height() - t.viewSection.height();
+                    }
+                    if (event.movementY > 0 && event.clientY < downEvent.minY) {
+                        doMove = false;
+                    }
+                    if (event.movementY < 0 && event.clientY > downEvent.maxY) {
+                        doMove = false;
+                    }
+                    if (doMove) {
+                        t.viewSection.css("top", dy);
+                    }
+
+                    t.hularion.publisher.ViewChange.publish({
+                        x: dx / (t.hularion.principal.width() - t.viewSection.width()), 
+                        y: dy / (t.hularion.principal.height() - t.viewSection.height())
+                    });
+                }
+            };
+            t.viewSection[0].addEventListener("mousedown", ()=>{
+                isDrag = true;
+                t.hularion.window.addEventListener("mousemove", moveHandler);
+            });
+            t.hularion.window.addEventListener("mouseup", ()=>{
+                isDrag = false;
+                t.hularion.window.removeEventListener("mousemove", moveHandler);
+            });
+            t.viewSection[0].addEventListener("mousedown", (event) => {
+                downEvent = event;
+                var pOffset = t.hularion.principal.offset();
+                var vOffset = t.viewSection.offset();
+                downEvent.minX = pOffset.left + (event.clientX - vOffset.left);
+                downEvent.maxX = (pOffset.left + t.hularion.principal.width() - t.viewSection.width()) + (event.clientX - vOffset.left);
+                downEvent.minY = pOffset.top + (event.clientY - vOffset.top);
+                downEvent.maxY = (pOffset.top + t.hularion.principal.height() - t.viewSection.height()) + (event.clientY - vOffset.top);
+                console.log("MiniMapPane.start mousedown- ", event, downEvent.maxX);
+            });
+        },
+
+        setSize: function(size){
+            var t = this;
+            t.size = size;
+            t.hularion.principal.width(size.width);
+            t.hularion.principal.height(size.height);
+            t.viewSection.width(size.width * size.xScale);
+            t.viewSection.height(size.height * size.yScale);
+        },
+
+        setLocation: function(x, y){
+            var t = this;
+            
+            if(x < 0){
+                x = 0;
+            }
+            if(x > 1){
+                x = 1;
+            }
+            t.viewSection.css("left", x * (t.hularion.principal.width() - t.viewSection.width()));
+
+            if(y<0){
+                y = 0;
+            }
+            if(y > 1){
+                y = 1;
+            }
+            t.viewSection.css("top", y * (t.hularion.principal.height() - t.viewSection.height()));
+        },
+
+        center: function () {
+            this.setLocation(.5, .5);
+        }
+    }
+
+
+</script>
+
+<style>
+    .this {
+        background-color: red;
+    }
+
+    .viewSection {
+        background-color: blue;
+        position: relative;
+    }
+</style>

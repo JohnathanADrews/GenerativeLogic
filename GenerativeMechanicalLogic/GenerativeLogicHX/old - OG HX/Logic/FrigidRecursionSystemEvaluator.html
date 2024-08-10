@@ -1,0 +1,38 @@
+﻿<div>
+
+
+    <div class="resultsContainer"></div>
+
+    <script class="codeObject">
+
+        function FrigidRecursionSystemEvaluator() {
+            this.title = "Recursion System Evaluator";
+            this.system = null;
+            this.inputs = null;
+            this.table = null;
+        }
+
+        FrigidRecursionSystemEvaluator.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.table = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.principal.find("> .resultsContainer").append(t.table.view);
+            },
+
+            Render: function () {
+                var t = this;
+
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidRecursionSystemEvaluator {
+        }
+    </style>
+
+</div>

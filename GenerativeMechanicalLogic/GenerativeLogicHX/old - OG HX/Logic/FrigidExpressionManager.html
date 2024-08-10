@@ -1,0 +1,537 @@
+﻿<div>
+
+    <div class="expressionLabelContainer"><label>Expression</label></div>
+    <div class="expressionInputContainer">
+        <div class="expressionInputAdd expressionInputButton"><label>Add</label></div>
+        <div class="expressionInputCancel expressionInputButton hide"><label>Cancel</label></div>
+        <div class="expressionInputSave expressionInputButton disabledButton"><label>Save</label></div>
+        <input class="expressionInput" disabled="disabled" />
+    </div>
+    <!--<div class="renderedExpressionContainer"></div>-->
+
+    <div class="enteredExpressionContainer">
+        <div>
+            <div class="expressionTableToggleHide"><label>Hide</label></div>
+            <div class="expressionTableToggleShow hide"><label>Show</label></div>
+            <div class="expressionTableSummary"><p></p></div>
+        </div>
+        <div class="expressionTableHeaderContainer"></div>
+        <div class="expressionTableContainer"></div>
+    </div>
+
+    <div class="templates">
+        <div class="expressionContainer"></div>
+        <div class="expressionTableIndexHeader"><label>&nbsp;</label></div>
+        <div class="expressionTableActiveHeader"><label>Active</label></div>
+        <div class="expressionTableDeleteHeader"><label>Delete</label></div>
+        <div class="expressionTableExpressionHeader"><label>Expression</label></div>
+
+        <div class="expressionTableIndexValue"><label>&nbsp;</label></div>
+        <div class="expressionTableActiveValue"><input type="checkbox" /></div>
+        <div class="expressionTableDeleteValue"><div><label>x</label></div></div>
+        <div class="expressionTableExpressionValue"></div>
+    </div>
+
+
+    <script class="codeObject">
+
+
+
+        //templates.v = variable, templates.r = result.  shorthand to reduce space since there are many cells.
+        function FrigidExpressionManager() {
+            this.title = "Expression Manager";
+            
+            this.expressionTableHeader = null;
+            this.expressionTable = null;
+
+            this.enterExpressionContainer = null;
+            this.renderedExpressionContainer = null;
+            this.renderedExpression = null;
+            this.expressionTableSummary = null;
+            this.expressionInput = null;
+
+            this.expressionIndexColumn = 0;
+            this.expressionActiveColumn = 1;
+            this.expressionDeleteColumn = 2;
+            this.expressionEquatorColumn = 3;
+
+            this.expressionInputAdd = null;
+            this.expressionInputSave = null;
+            this.expressionInputCancel = null;
+
+            this.updater = () => { };
+        }
+
+        FrigidExpressionManager.prototype = {
+
+            Start: function () {
+                var t = this;
+
+                t.expressionTableSummary = t.principal.find(".expressionTableSummary");
+                t.expressionInput = t.principal.find(".expressionInput");
+                t.expressionInputAdd = t.principal.find(".expressionInputAdd");
+                t.expressionInputSave = t.principal.find(".expressionInputSave");
+                t.expressionInputCancel = t.principal.find(".expressionInputCancel");
+                
+                t.principal.find(".expressionTableToggleHide").on("click", function () {
+                    t.principal.find(".expressionTableToggleShow").removeClass("hide");
+                    t.principal.find(".expressionTableToggleHide").addClass("hide");
+                    t.principal.find(".expressionTableContainer").addClass("hide");
+                    t.principal.find(".expressionTableHeaderContainer").addClass("hide");
+                });
+                t.principal.find(".expressionTableToggleShow").on("click", function () {
+                    t.principal.find(".expressionTableToggleHide").removeClass("hide");
+                    t.principal.find(".expressionTableToggleShow").addClass("hide");
+                    t.principal.find(".expressionTableContainer").removeClass("hide");
+                    t.principal.find(".expressionTableHeaderContainer").removeClass("hide");
+                });
+                
+                t.expressionTableHeader = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.expressionTableHeader.code.AppendColumns(4);
+                t.expressionTableHeader.code.AppendRows(1);
+                t.expressionTableHeader.code.SetColumnWidth(t.expressionActiveColumn, 70);
+                t.expressionTableHeader.code.SetColumnWidth(t.expressionDeleteColumn, 70);
+                t.expressionTableHeader.code.SetColumnWidth(t.expressionEquatorColumn, 730);
+                t.expressionTableHeader.code.SetContent(t.expressionIndexColumn, 0, t.CreateTemplate("expressionTableIndexHeader"));
+                t.expressionTableHeader.code.SetContent(t.expressionActiveColumn, 0, t.CreateTemplate("expressionTableActiveHeader"));
+                t.expressionTableHeader.code.SetContent(t.expressionDeleteColumn, 0, t.CreateTemplate("expressionTableDeleteHeader"));
+                t.expressionTableHeader.code.SetContent(t.expressionEquatorColumn, 0, t.CreateTemplate("expressionTableExpressionHeader"));
+                t.principal.find(".expressionTableHeaderContainer").append(t.expressionTableHeader.view);
+
+                t.expressionTable = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.expressionTable.code.AppendColumns(4);
+                t.expressionTable.code.SetColumnWidth(t.expressionActiveColumn, 70);
+                t.expressionTable.code.SetColumnWidth(t.expressionDeleteColumn, 70);
+                t.expressionTable.code.SetColumnWidth(t.expressionEquatorColumn, 730);
+                t.principal.find(".expressionTableContainer").append(t.expressionTable.view);
+
+                t.renderedExpression = $.h.app.presentation.logic.getFrigidExpression();
+                t.enterExpressionContainer = t.principal.find("> .expressionInputContainer");
+                t.renderedExpressionContainer = t.principal.find("> .renderedExpressionContainer");
+                t.renderedExpressionContainer.append(t.renderedExpression.view);
+                
+                t.expressionInputAdd.on("click", () => {
+                    var equation = new LogicalExpressionEquation();
+                    equation.expression.root = LogicalExpression.CreateOperandVariableNode("a");
+                    var equations = t.GetEquations();
+                    $.d.ProcessIterator(1, equations.length, i => {
+                        var found = false;
+                        equation.name = "f" + i;
+                        $.d.ProcessArray(equations, eq => { if (eq.name == equation.name) { found = true; return false; } });
+                        if (!found) { return false; }
+                    });
+                    var container = t.AddEquation(equation);
+                    container.data("selector")();
+                });
+
+                var saver = () => {
+                    console.log("FrigidExpressionManager.Start saver - ", t.expressionInput.data("presenter").code)
+                    t.expressionInput.data("presenter").code.Parse(t.expressionInput.val());
+                    t.expressionInputSave.addClass("disabledButton");
+                    t.expressionInputAdd.removeClass("hide");
+                    t.expressionInputCancel.addClass("hide");
+                    t.principal.find(".expressionTableExpressionValue").removeClass("selectedExpression");
+                    t.expressionInput.val("");
+                    t.Update();
+                    t.expressionInput.attr("disabled", "disabled");
+                };
+                t.expressionInputSave.on("click", () => {
+                    if (t.expressionInput.attr("disabled") == "disabled") { return; }
+                    //console.log("ewqgterge", t.expressionInput.val(), " - ", t.expressionInput.html())
+                    saver();
+                });                
+                t.expressionInput.on("keyup", e => {
+                    if (e.key == "Enter") { saver(); }
+                });
+
+                t.expressionInputCancel.on("click", () => {
+                    t.expressionInput.attr("disabled", "disabled");
+                    t.expressionInputAdd.removeClass("hide");
+                    t.expressionInputCancel.addClass("hide");
+                    t.expressionInputSave.addClass("disabledButton");
+                    t.principal.find(".expressionTableExpressionValue").removeClass("selectedExpression");
+                    t.expressionInput.val("");
+                });
+
+            },
+
+            AddEquation: function (equation) {
+                var t = this;
+
+                console.log("FrigidExpressionManager.AddEquator - ", equation.expression.root);
+                //console.log("FrigidExpressionManager.AddEquator - ", equation, TreeTraverser.CreateEvaluationPlan(TreeTraverser.PLROrder, equation.expression.root, node => node.GetNodes(), true));
+
+                //var expressionContainer = t.SetupEquation(equation);
+
+                
+                var equationPresenter = $.h.app.presentation.logic.getFrigidExpressionEquator();
+                equationPresenter.code.name = "x" +  t.expressionTable.code.GetRowCount();
+                equationPresenter.code.equation = equation;
+                equationPresenter.code.Render();
+
+                var expressionContainer = t.CreateTemplate("expressionTableExpressionValue");
+                expressionContainer.append(equationPresenter.view);
+                expressionContainer.data("selector", () => {
+                    t.expressionInput.val(equationPresenter.code.RenderText());
+                    t.expressionInput.attr("disabled", false);
+                    t.expressionInput.data("presenter", equationPresenter);
+                    t.principal.find(".expressionTableExpressionValue").removeClass("selectedExpression");
+                    expressionContainer.addClass("selectedExpression");
+                    t.expressionInputAdd.addClass("hide");
+                    t.expressionInputCancel.removeClass("hide");
+                    t.expressionInputSave.removeClass("disabledButton");
+                    t.expressionInput.focus();
+                });
+                expressionContainer.on("click", () => { expressionContainer.data("selector")(); });
+
+
+                var activeChecker = t.CreateTemplate("expressionTableActiveValue");
+                var check = activeChecker.find("input:checkbox");
+                check.prop("checked", true);
+                check.change(() => { t.Update(); });
+
+                var deleter = t.CreateTemplate("expressionTableDeleteValue");
+                deleter.on("click", () => {
+                    t.expressionTable.code.DeleteRowContaining(deleter);
+                    t.Update();
+                });
+
+
+                var rowIndex = t.expressionTable.code.AppendRow();
+                deleter.append("<label>" + rowIndex + "</label>");
+                t.expressionTable.code.SetContent(t.expressionIndexColumn, rowIndex, t.CreateTemplate("expressionTableIndexValue"));
+                t.expressionTable.code.SetContent(t.expressionActiveColumn, rowIndex, activeChecker);
+                t.expressionTable.code.SetContent(t.expressionDeleteColumn, rowIndex, deleter);
+                t.expressionTable.code.SetContent(t.expressionEquatorColumn, rowIndex, expressionContainer);
+
+                t.Update();
+                return expressionContainer;
+            },
+
+            Render: function () {
+                var t = this;
+                t.Update();
+            },
+
+            Update: function () {
+                var t = this;
+
+                var activeCount = 0;
+                $.d.ProcessIterator(0, t.expressionTable.code.GetRowCount() - 1, i => {
+                    var activeChecker = t.expressionTable.code.GetContent(t.expressionActiveColumn, i);
+                    if (activeChecker.find("input").prop("checked")) { activeCount++; }
+                    t.expressionTable.code.GetContent(t.expressionIndexColumn, i).find("> *").html(i+1);
+                });
+                var summary = "" + activeCount + " of " + t.expressionTable.code.GetRowCount() + " expressions active.";
+
+
+                summary += " Variables: { ";
+                var variableNames = t.GetVariableNames();
+                $.d.ProcessIterator(0, variableNames.length - 1, i => {
+                    if (i > 0) { summary += ", "; }
+                    summary += variableNames[i];
+                });
+                summary += " }.";
+
+                t.expressionTableSummary.find(" > *").html(summary);
+                t.updater();
+                
+                //console.log("FrigidExpressionManager.Update 232ffvr- ", variableNames);
+            },
+
+            GetEquations: function () {
+                var t = this;
+                var result = [];
+                $.d.ProcessIterator(0, t.expressionTable.code.GetRowCount() - 1, i => {
+                    var equator = t.expressionTable.code.GetContent(t.expressionEquatorColumn, i).find("> *").data("code");
+                    //equator.equation.isActive = t.expressionTable.code.GetContent(t.expressionActiveColumn, i).find("input").prop("checked");
+                    result.push({ equation: equator.equation, isActive: t.expressionTable.code.GetContent(t.expressionActiveColumn, i).find("input").prop("checked") });
+                });
+                return result;
+            },
+
+            SetUpdate: function (updater) {
+                var t = this;
+                t.updater = () => { updater(); };
+            },
+
+            GetVariableNames: function () {
+                var t = this;
+                var equations = t.GetEquations();
+                var variables = {};
+                $.d.ProcessArray(equations, equationData => {
+                    if (!equationData.isActive) { return; }
+                    $.d.ProcessArray(equationData.equation.expression.GetNodesOfType(LogicalExpressionNode.Type.OperandVariable), node => {
+                //console.log("FrigidExpressionManager.Update w4y3gverbv- ", node.type, node);
+                        variables[node.value.name] = node.value.name;
+                    });
+                });
+                var variableNames = $.d.GetObjectMemberNames(variables);
+                variableNames.sort();
+                //console.log("FrigidExpressionManager.Update variableNames- ", variableNames);
+                return variableNames;
+            }
+
+        };
+
+
+    </script>
+
+
+    <style>
+        .FrigidExpressionManager {
+            background-color: rgba(255,255,255,.99);
+            display: inline-block;
+            width: 100%;
+        }
+
+        .FrigidExpressionManager .expressionLabelContainer{
+            margin-left:125px;
+            width:100%;
+        }
+
+        .FrigidExpressionManager .enteredExpressionContainer{
+            width: 100%;
+            display:inline-block;
+            margin-top:2px;
+        }
+
+        .FrigidExpressionManager .enteredExpressionContainer > *{
+            margin-left:5px;
+        }
+        .FrigidExpressionManager .enteredExpressionContainer *{
+            cursor:pointer;
+        }
+
+
+        .FrigidExpressionManager .expressionTableHeaderContainer{
+            width: 100%;
+            padding:10px;
+            padding-bottom:0px;
+            display:inline-block;
+            max-height:400px;
+            margin-top:5px;
+
+        }
+        .FrigidExpressionManager .expressionTableContainer{
+            width:calc(100% - 10px);
+            height:calc(100% - 130px);
+            padding:10px;
+            padding-top:0px;
+            display:inline-block;
+            max-height:400px;
+            overflow-y:scroll;
+        }
+
+        .FrigidExpressionManager .expressionTableToggleHide{
+            width: 50px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidExpressionManager .expressionTableToggleHide *{
+            cursor:pointer;
+        }
+        .FrigidExpressionManager .expressionTableToggleHide:hover{
+            background-color:yellow;
+        }
+
+        .FrigidExpressionManager .expressionTableToggleShow{
+            width: 50px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidExpressionManager .expressionTableToggleShow *{
+            cursor:pointer;
+        }
+        .FrigidExpressionManager .expressionTableToggleShow:hover{
+            background-color:yellow;
+        }
+
+        .FrigidExpressionManager .expressionTableSummary{
+            width:calc(100% - 60px);
+            float:left;
+            border-top:solid 1px gray;
+            border-bottom:solid 1px gray;
+            height:30px;
+            margin-left:5px;
+            padding-left:10px;
+            padding-top:4px;
+            overflow:hidden;
+        }
+        
+        .FrigidExpressionManager .expressionInputContainer{
+            /*margin-left:15px;*/
+            display:inline-block;
+            margin-bottom:2px;
+            width: calc(100% - 10px);
+        }
+        .FrigidExpressionManager .expressionInputContainer > *{
+            float:left;
+            margin-left:5px;
+        }
+        .FrigidExpressionManager .expressionInputContainer > input{
+            width: calc(100% - 140px);
+            border-left:none;
+            border-right:none;
+            padding-left:10px;
+            margin-left:10px;
+            float:left;
+            /*background-color:#b7dff3;*/
+        }
+        /*.FrigidExpressionManager .expressionInputAdd{
+            width: 50px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidExpressionManager .expressionInputAdd:hover{
+            background-color:yellow;
+        }
+        .FrigidExpressionManager .expressionInputAdd > *{
+            cursor:pointer;
+        }
+        .FrigidExpressionManager .expressionInputSave{
+            width: 50px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidExpressionManager .expressionInputSave:hover{
+            background-color:yellow;
+        }
+        .FrigidExpressionManager .expressionInputSave > *{
+            cursor:pointer;
+        }*/
+        .FrigidExpressionManager .expressionInputButton{
+            width: 60px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidExpressionManager .expressionInputButton:hover{
+            background-color:yellow;
+        }
+        .FrigidExpressionManager .expressionInputButton > *{
+            cursor:pointer;
+        }
+
+        
+        .FrigidExpressionManager .renderedExpressionContainer{
+            width: 100%;
+        }
+
+        .FrigidExpressionManager .expressionTableExpressionHeader{
+            padding-left:8px;
+            width:100%;
+            height:100%;
+            border-bottom:solid 1px darkgray;
+        }
+        .FrigidExpressionManager .expressionTableActiveHeader{
+            padding-left:8px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+        }
+
+        .FrigidExpressionManager .expressionTableDeleteHeader{
+            padding-left:8px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+        }
+        
+        .FrigidExpressionManager .expressionTableIndexValue{
+            padding-top:4px;
+        }
+        .FrigidExpressionManager .expressionTableActiveValue{
+            padding-left:20px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+        }
+        .FrigidExpressionManager .expressionTableActiveValue > input{
+            width:20px;
+            height:20px;
+            cursor:pointer;
+        }
+        
+        .FrigidExpressionManager .expressionTableDeleteValue{
+            padding-left:20px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+            padding-top:4px;
+        }
+        .FrigidExpressionManager .expressionTableDeleteValue > div{
+            border:solid 1px gray;
+            border-radius:4px;
+            width:22px;
+            height:22px;
+            cursor:pointer;
+            background-color:#f2afaf;
+            text-align:center;
+            padding-top:-1px;
+        }
+        .FrigidExpressionManager .expressionTableDeleteValue > div:hover{
+            background-color:red;
+        }
+        .FrigidExpressionManager .expressionTableDeleteValue > div *{
+            cursor:pointer;
+        }
+        
+        .FrigidExpressionManager .expressionTableExpressionValue{
+            padding-left:10px;
+            cursor:pointer;
+            width:100%;
+            height:100%;
+            border-bottom:solid 1px darkgray;
+        }
+        .FrigidExpressionManager .expressionTableExpressionValue:hover{
+            background-color:#b0ebba;
+        }
+
+        .FrigidExpressionManager .selectedExpression{
+            /*background: linear-gradient(0deg, #b0ebba 0%, white 20%,  white 80%, #b0ebba 100%);*/
+            background: linear-gradient(180deg, #b0ebba 0%, #d1f5da 20%, #e2f1e6 30%, #e2f1e6 75%, white 85%, #57ae66 100%);
+            background-color:#57ae66;
+
+            /*background: linear-gradient(0deg, yellow 0%, white 20%,  white 80%, yellow 100%);*/
+        }
+        
+        .FrigidExpressionManager .disabledButton{
+            background: linear-gradient(180deg, #b1b4b3 0%, #b1b4b3 100%);
+            cursor:initial;
+        }
+        .FrigidExpressionManager .disabledButton > *{
+            cursor:initial;
+        }
+
+    </style>
+
+</div>

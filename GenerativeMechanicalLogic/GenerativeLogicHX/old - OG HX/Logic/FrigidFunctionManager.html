@@ -1,0 +1,469 @@
+﻿<div>
+
+    <div class="functionLabelContainer"><label>Function</label></div>
+    <div class="functionInputContainer">
+        <div class="functionInputAdd functionInputButton"><label>Add</label></div>
+        <div class="functionInputCancel functionInputButton hide"><label>Cancel</label></div>
+        <div class="functionInputSave functionInputButton disabledButton"><label>Save</label></div>
+        <input class="functionInput" disabled="disabled" />
+    </div>
+    <div class="renderedFunctionContainer"></div>
+
+    <div class="enteredFunctionContainer">
+        <div>
+            <div class="functionTableToggleHide"><label>Hide</label></div>
+            <div class="functionTableToggleShow hide"><label>Show</label></div>
+            <div class="functionTableSummary"><p></p></div>
+        </div>
+        <div class="functionTableHeaderContainer"></div>
+        <div class="functionTableContainer"></div>
+    </div>
+
+    <div class="templates">
+        <div class="functionContainer"></div>
+        <div class="functionTableIndexHeader"><label>&nbsp;</label></div>
+        <div class="functionTableActiveHeader"><label>Active</label></div>
+        <div class="functionTableDeleteHeader"><label>Delete</label></div>
+        <div class="functionTableFunctionHeader"><label>Function</label></div>
+
+        <div class="functionTableIndexValue"><label>&nbsp;</label></div>
+        <div class="functionTableActiveValue"><input type="checkbox" /></div>
+        <div class="functionTableDeleteValue"><div><label>x</label></div></div>
+        <div class="functionTableFunctionValue"></div>
+    </div>
+
+
+    <script class="codeObject">
+
+
+
+        //templates.v = variable, templates.r = result.  shorthand to reduce space since there are many cells.
+        function FrigidFunctionManager() {
+            this.title = "Function Manager";
+            
+            this.functionTableHeader = null;
+            this.functionTable = null;
+
+            this.enterfunctionContainer = null;
+            this.renderedFunctionContainer = null;
+            this.renderedExpression = null;
+            this.functionTableSummary = null;
+            this.functionInput = null;
+
+            this.functionIndexColumn = 0;
+            this.functionActiveColumn = 1;
+            this.functionDeleteColumn = 2;
+            this.functionDisplayColumn = 3;
+
+            this.functionInputAdd = null;
+            this.functionInputSave = null;
+            this.functionInputCancel = null;
+
+            this.updater = () => { };
+        }
+
+        FrigidFunctionManager.prototype = {
+
+            Start: function () {
+                var t = this;
+
+                t.functionTableSummary = t.principal.find(".functionTableSummary");
+                t.functionInput = t.principal.find(".functionInput");
+                t.functionInputAdd = t.principal.find(".functionInputAdd");
+                t.functionInputSave = t.principal.find(".functionInputSave");
+                t.functionInputCancel = t.principal.find(".functionInputCancel");
+                
+                t.principal.find(".functionTableToggleHide").on("click", function () {
+                    t.principal.find(".functionTableToggleShow").removeClass("hide");
+                    t.principal.find(".functionTableToggleHide").addClass("hide");
+                    t.principal.find(".functionTableContainer").addClass("hide");
+                    t.principal.find(".functionTableHeaderContainer").addClass("hide");
+                });
+                t.principal.find(".functionTableToggleShow").on("click", function () {
+                    t.principal.find(".functionTableToggleHide").removeClass("hide");
+                    t.principal.find(".functionTableToggleShow").addClass("hide");
+                    t.principal.find(".functionTableContainer").removeClass("hide");
+                    t.principal.find(".functionTableHeaderContainer").removeClass("hide");
+                });
+                
+                t.functionTableHeader = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.functionTableHeader.code.AppendColumns(4);
+                t.functionTableHeader.code.AppendRows(1);
+                t.functionTableHeader.code.SetColumnWidth(t.functionActiveColumn, 70);
+                t.functionTableHeader.code.SetColumnWidth(t.functionDeleteColumn, 70);
+                t.functionTableHeader.code.SetColumnWidth(t.functionDisplayColumn, 730);
+                t.functionTableHeader.code.SetContent(t.functionIndexColumn, 0, t.CreateTemplate("functionTableIndexHeader"));
+                t.functionTableHeader.code.SetContent(t.functionActiveColumn, 0, t.CreateTemplate("functionTableActiveHeader"));
+                t.functionTableHeader.code.SetContent(t.functionDeleteColumn, 0, t.CreateTemplate("functionTableDeleteHeader"));
+                t.functionTableHeader.code.SetContent(t.functionDisplayColumn, 0, t.CreateTemplate("functionTableFunctionHeader"));
+                t.principal.find(".functionTableHeaderContainer").append(t.functionTableHeader.view);
+
+                t.functionTable = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.functionTable.code.AppendColumns(4);
+                t.functionTable.code.SetColumnWidth(t.functionActiveColumn, 70);
+                t.functionTable.code.SetColumnWidth(t.functionDeleteColumn, 70);
+                t.functionTable.code.SetColumnWidth(t.functionDisplayColumn, 730);
+                t.principal.find(".functionTableContainer").append(t.functionTable.view);
+
+                t.renderedExpression = $.h.app.presentation.logic.getFrigidExpression();
+                t.enterfunctionContainer = t.principal.find("> .functionInputContainer");
+                t.renderedFunctionContainer = t.principal.find("> .renderedFunctionContainer");
+                t.renderedFunctionContainer.append(t.renderedExpression.view);
+
+
+                t.functionInputAdd.on("click", () => {
+                    var logicalFunction = new LogicalFunction();
+                    var container = t.AddFunction(logicalFunction);
+                    container.data("selector")();
+                });
+
+                var saver = () => {
+                    t.functionInput.data("presenter").code.Parse(t.functionInput.val());
+                    t.functionInputSave.addClass("disabledButton");
+                    t.functionInputAdd.removeClass("hide");
+                    t.functionInputCancel.addClass("hide");
+                    t.principal.find(".functionTableFunctionValue").removeClass("selectedFunction");
+                    t.functionInput.val("");
+                    t.Update();
+                    t.functionInput.attr("disabled", "disabled");
+                };
+                t.functionInputSave.on("click", () => {
+                    if (t.functionInput.attr("disabled") == "disabled") { return; }
+                    saver();
+                });                
+                t.functionInput.on("keyup", e => {
+                    if (e.key == "Enter") { saver(); }
+                });
+
+                t.functionInputCancel.on("click", () => {
+                    t.functionInput.attr("disabled", "disabled");
+                    t.functionInputAdd.removeClass("hide");
+                    t.functionInputCancel.addClass("hide");
+                    t.functionInputSave.addClass("disabledButton");
+                    t.principal.find(".functionTableFunctionValue").removeClass("selectedFunction");
+                    t.functionInput.val("");
+                });
+
+            },
+
+            AddFunction: function (logicalFunction) {
+                var t = this;
+
+                //console.log("FrigidFunctionManager.AddFunction 1 - ", logicalFunction);
+                //console.log("FrigidExpressionManager.AddEquator - ", equation, TreeTraverser.CreateEvaluationPlan(TreeTraverser.PLROrder, equation.expression.root, node => node.GetNodes(), true));
+
+                //var expressionContainer = t.SetupEquation(equation);
+
+                
+                var functionPresenter = $.h.app.presentation.logic.getFrigidLogicalFunction();
+                functionPresenter.code.logicalFunction = logicalFunction;
+                functionPresenter.code.Render();
+                
+                //console.log("FrigidFunctionManager.AddFunction 2 - ", logicalFunction);
+
+                var functionContainer = t.CreateTemplate("functionTableFunctionValue");
+                functionContainer.append(functionPresenter.view);
+                functionContainer.data("selector", () => {
+                    t.functionInput.val(functionPresenter.code.RenderText());
+                    t.functionInput.attr("disabled", false);
+                    t.functionInput.data("presenter", functionPresenter);
+                    t.principal.find(".functionTableFunctionValue").removeClass("selectedFunction");
+                    functionContainer.addClass("selectedFunction");
+                    t.functionInputAdd.addClass("hide");
+                    t.functionInputCancel.removeClass("hide");
+                    t.functionInputSave.removeClass("disabledButton");
+                    t.functionInput.focus();
+                });
+                functionContainer.on("click", () => { functionContainer.data("selector")(); });
+                
+                //console.log("FrigidFunctionManager.AddFunction 3 - ", logicalFunction);
+
+                var activeChecker = t.CreateTemplate("functionTableActiveValue");
+                var check = activeChecker.find("input:checkbox");
+                check.prop("checked", true);
+                check.change(() => { t.Update(); });
+
+                var deleter = t.CreateTemplate("functionTableDeleteValue");
+                deleter.on("click", () => {
+                    t.functionTable.code.DeleteRowContaining(deleter);
+                    t.Update();
+                });
+                
+                //console.log("FrigidFunctionManager.AddFunction 4 - ", logicalFunction);
+
+                var rowIndex = t.functionTable.code.AppendRow();
+                //console.log("FrigidFunctionManager.AddFunction 4.1 - ", logicalFunction);
+                deleter.append("<label>" + rowIndex + "</label>");
+                t.functionTable.code.SetContent(t.functionIndexColumn, rowIndex, t.CreateTemplate("functionTableIndexValue"));
+                t.functionTable.code.SetContent(t.functionActiveColumn, rowIndex, activeChecker);
+                t.functionTable.code.SetContent(t.functionDeleteColumn, rowIndex, deleter);
+                //console.log("FrigidFunctionManager.AddFunction 4.2 - ", t.functionDisplayColumn, rowIndex, functionContainer);
+                t.functionTable.code.SetContent(t.functionDisplayColumn, rowIndex, functionContainer);
+                
+                //console.log("FrigidFunctionManager.AddFunction 5 - ", logicalFunction);
+                t.Update();
+                return functionContainer;
+            },
+
+            GetFunctions: function () {
+                var t = this;
+                var result = [];
+                $.d.ProcessIterator(0, t.functionTable.code.GetRowCount() - 1, i => {
+                    var functionDisplay = t.functionTable.code.GetContent(t.functionDisplayColumn, i).find("> *").data("code");
+                    //console.log("FrigidFunctionManager.GetFunctions 1 - ", functionDisplay, functionDisplay.logicalFunction);
+                    //functionDisplay.logicalfunction.isActive = t.expressionTable.code.GetContent(t.expressionActiveColumn, i).find("input").prop("checked");
+                    result.push({ logicalFunction: functionDisplay.logicalFunction, isActive: t.functionTable.code.GetContent(t.functionActiveColumn, i).find("input").prop("checked") });
+                });
+                return result;
+            },
+
+            Update: function () {
+                var t = this;
+
+                t.updater();
+            },
+
+            SetUpdater: function (updater) {
+                this.updater = () => { updater(); };
+            },
+
+            UpdateFunction: function (logicalFunction) {
+                var t = this;
+                $.d.ProcessIterator(0, t.functionTable.code.GetRowCount() - 1, i => {
+                    var functionDisplay = t.functionTable.code.GetContent(t.functionDisplayColumn, i).find(" .FrigidLogicalFunction").data("code");
+                    if (logicalFunction === functionDisplay.logicalFunction) { functionDisplay.Update(); return false; }
+                });
+            },
+
+            SetHeight: function () {
+
+            }
+
+        };
+
+
+    </script>
+
+
+    <style>
+        .FrigidFunctionManager {
+            background-color: rgba(255,255,255,.99);
+            display: inline-block;
+            width: 100%;
+            overflow:hidden;
+        }
+
+        .FrigidFunctionManager .functionLabelContainer{
+            margin-left:145px;
+            width:100%;
+        }
+
+        .FrigidFunctionManager .enteredFunctionContainer{
+            width: 100%;
+            display:inline-block;
+            margin-top:2px;
+        }
+
+        .FrigidFunctionManager .enteredFunctionContainer > *{
+            margin-left:5px;
+        }
+        .FrigidFunctionManager .enteredFunctionContainer *{
+            cursor:pointer;
+        }
+
+
+        .FrigidFunctionManager .functionTableHeaderContainer{
+            width: 100%;
+            padding:10px;
+            padding-bottom:0px;
+            display:inline-block;
+            max-height:400px;
+            margin-top:5px;
+
+        }
+        .FrigidFunctionManager .functionTableContainer{
+            width:calc(100% - 10px);
+            height:calc(100% - 130px);
+            padding:10px;
+            padding-top:0px;
+            display:inline-block;
+            max-height:400px;
+            overflow-y:scroll;
+        }
+
+        .FrigidFunctionManager .functionTableToggleHide{
+            width: 50px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidFunctionManager .functionTableToggleHide *{
+            cursor:pointer;
+        }
+        .FrigidFunctionManager .functionTableToggleHide:hover{
+            background-color:yellow;
+        }
+
+        .FrigidFunctionManager .functionTableToggleShow{
+            width: 50px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidFunctionManager .functionTableToggleShow *{
+            cursor:pointer;
+        }
+        .FrigidFunctionManager .functionTableToggleShow:hover{
+            background-color:yellow;
+        }
+
+        .FrigidFunctionManager .functionTableSummary{
+            width: 100%;
+            width:calc(100% - 60px);
+            float:left;
+            border-top:solid 1px gray;
+            border-bottom:solid 1px gray;
+            height:30px;
+            margin-left:5px;
+            padding-left:10px;
+            padding-top:4px;
+        }
+        
+        .FrigidFunctionManager .functionInputContainer{
+            display:inline-block;
+            margin-bottom:2px;
+            width:100%;
+        }
+        .FrigidFunctionManager .functionInputContainer > *{
+            float:left;
+            margin-left:5px;
+        }
+        .FrigidFunctionManager .functionInputContainer > input{
+            width: calc(100% - 150px);
+            float:left;
+            border-left:none;
+            border-right:none;
+            padding-left:10px;
+            margin-left:10px;
+        }
+       
+        .FrigidFunctionManager .functionInputButton{
+            width: 60px;
+            height:30px;
+            float:left;
+            border:solid 1px black;
+            border-radius: 5px;
+            cursor:pointer;
+            text-align: center;
+            padding-top:3px;
+        }
+        .FrigidFunctionManager .functionInputButton:hover{
+            background-color:yellow;
+        }
+        .FrigidFunctionManager .functionInputButton > *{
+            cursor:pointer;
+        }
+
+        
+        .FrigidFunctionManager .renderedFunctionContainer{
+            width: 100%;
+        }
+
+        .FrigidFunctionManager .functionTableFunctionHeader{
+            padding-left:8px;
+            width:100%;
+            height:100%;
+            border-bottom:solid 1px darkgray;
+        }
+        .FrigidFunctionManager .functionTableActiveHeader{
+            padding-left:8px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+        }
+
+        .FrigidFunctionManager .functionTableDeleteHeader{
+            padding-left:8px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+        }
+        
+        .FrigidFunctionManager .functionTableIndexValue{
+            padding-top:4px;
+        }
+        .FrigidFunctionManager .functionTableActiveValue{
+            padding-left:20px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+        }
+        .FrigidFunctionManager .functionTableActiveValue > input{
+            width:20px;
+            height:20px;
+            cursor:pointer;
+        }
+        
+        .FrigidFunctionManager .functionTableDeleteValue{
+            padding-left:20px;
+            width:100%;
+            height:100%;
+            border-right:solid 1px gray;
+            border-bottom:solid 1px darkgray;
+            padding-top:4px;
+        }
+        .FrigidFunctionManager .functionTableDeleteValue > div{
+            border:solid 1px gray;
+            border-radius:4px;
+            width:22px;
+            height:22px;
+            cursor:pointer;
+            background-color:#f2afaf;
+            text-align:center;
+            padding-top:-1px;
+        }
+        .FrigidFunctionManager .functionTableDeleteValue > div:hover{
+            background-color:red;
+        }
+        .FrigidFunctionManager .functionTableDeleteValue > div *{
+            cursor:pointer;
+        }
+        
+        .FrigidFunctionManager .functionTableFunctionValue{
+            padding-left:10px;
+            cursor:pointer;
+            width:100%;
+            height:100%;
+            border-bottom:solid 1px darkgray;
+        }
+        .FrigidFunctionManager .functionTableFunctionValue:hover{
+            background-color:#b0ebba;
+        }
+
+        .FrigidFunctionManager .selectedFunction{
+            background: linear-gradient(180deg, #b0ebba 0%, #d1f5da 20%, #e2f1e6 30%, #e2f1e6 75%, white 85%, #57ae66 100%);
+            background-color:#57ae66;
+        }
+        
+        .FrigidFunctionManager .disabledButton{
+            background: linear-gradient(180deg, #b1b4b3 0%, #b1b4b3 100%);
+            cursor:initial;
+        }
+        .FrigidFunctionManager .disabledButton > *{
+            cursor:initial;
+        }
+
+    </style>
+
+</div>

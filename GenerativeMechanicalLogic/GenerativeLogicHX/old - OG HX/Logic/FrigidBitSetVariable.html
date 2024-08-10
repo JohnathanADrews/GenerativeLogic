@@ -1,0 +1,405 @@
+﻿<div>
+
+    <div class="seriesNameContainer">
+        <div class="seriesName"><label></label></div>
+        <div class="seriesLength"><label>&nbsp;</label></div>
+        <div class="seriesRepetition"><label>&nbsp;</label></div>
+        <div class="injectorIndicator hide"><div class="indicatorBar"></div></div>
+        <div class="leadIndicator hide"><div class="indicatorBar"></div></div>
+    </div>
+    <div class="seriesEqual"><label>=</label></div>
+    <div class="valuesContainer"></div>
+    <div class="numericContainer">
+        <label class="numericLabel">Numeric</label>
+        <div class="numericEquivalent"></div>
+    </div>
+
+    <div class="templates">
+        <div class="indexCell"><label></label></div>
+        <div class="indexValue"><label class="contentValue"></label><div class="contentCover"></div></div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidBitSetVariable() {
+            this.title = "Frigid Bit Set Variable";
+            this.series = null;
+            this.results = null;
+            this.length = 0;
+            this.repetition = null;
+            this.natural = 0;
+            this.set = [];
+            this.table = null;
+            this.numericEditor = null;
+            this.valueProvider = () => { };
+            this.valueSetter = (value) => { };
+            this.bitsSetter = (bits) => { };
+            this.seriesNameContainer = null;
+            this.isEditable = true;
+            this.isInjector = false;
+            this.isLead = false;
+
+            this.integerUpdater = (value) => { };
+            this.setUpdater = (set) => { };
+        }
+
+        FrigidBitSetVariable.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.values = t.principal.find("> .valuesContainer");
+                t.table = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.numericEditor = $.h.app.presentation.instance.getIntegerEditor();
+                t.numericEditor.code.SetValue(0);
+                t.principal.find(" .numericEquivalent").append(t.numericEditor.view);
+                t.seriesNameContainer = t.principal.find("> .seriesNameContainer");
+
+
+                t.table = $.h.app.presentation.shared.arctic.getArcticTable();
+                t.table.code.AppendRows(2);
+                t.table.code.SetRowHeight(0, 24);
+                t.table.code.SetRowHeight(1, 40);
+                t.table.code.SetBaseColumnWidth(40);
+                t.values.append(t.table.view);
+            },
+
+            createCell: function (index) {
+                var t = this;
+                indexCell = t.CreateTemplate("indexCell");
+                indexCell.find("label").html(t.length - index);
+
+                var valueCell = t.CreateTemplate("indexValue");
+                valueCell.find("label").html(t.set[t.length - index - 1]);
+                if (t.set[t.length - index - 1] == 0) { valueCell.addClass("zeroValue"); }
+                else { valueCell.addClass("oneValue"); }
+                valueCell.find(".contentCover").on("click", e => {
+                    if (!t.isEditable) { return; }
+                    var o = $(e.target).closest(".indexValue");
+                    if (o.find("label").html() == "0") {
+                        o.find("label").html("1");
+                        o.removeClass("zeroValue");
+                        o.addClass("oneValue");
+                    }
+                    else {
+                        o.find("label").html("0");
+                        o.removeClass("oneValue");
+                        o.addClass("zeroValue");
+                    }
+                    t.updateNumeric();
+                });
+                return { indexCell: indexCell, valueCell: valueCell };
+            },
+
+            updateNumeric: function () {
+                var t = this;
+                var convert = [];
+                $.d.ProcessReverseIterator(t.table.code.GetColumnCount() - 1, 0, j => {
+                    convert.push(t.table.code.GetContent(j, 1).find(".contentValue").html() == "0" ? 0 : 1);
+                });
+                var intValue = LogicalExpression.ConvertSetToNatural(convert);
+                t.numericEditor.code.SetValue(intValue);
+                t.integerUpdater(intValue);
+                t.setUpdater(convert);
+            },
+
+            SetRepetition: function (value) {
+                var t = this;
+                if (value == null) { return; }
+                t.repetition = value;
+                t.seriesNameContainer.find("> .seriesRepetition > label").html(t.repetition);
+            },
+
+            Render: function () {
+                var t = this;
+                t.seriesNameContainer.find("> .seriesName > label").html(t.series.name);
+                t.seriesNameContainer.find("> .seriesLength > label").html(t.length);
+                //if (t.repetition == null) { t.repetition = 1; }
+                t.SetRepetition(t.repetition);
+                if (t.isInjector === true) { t.seriesNameContainer.find("> .injectorIndicator").removeClass("hide"); }
+                else { t.seriesNameContainer.find("> .injectorIndicator").addClass("hide"); }
+                if (t.isLead === true) { t.seriesNameContainer.find("> .leadIndicator").removeClass("hide"); }
+                else { t.seriesNameContainer.find("> .leadIndicator").addClass("hide"); }
+                if (t.series == null) { return; }
+                t.set = LogicalExpression.ConvertNumberToSet(t.natural);
+                while (t.set.length < t.length) { t.set.push(0); }
+
+                t.table.code.AppendColumns(t.length);
+
+                var updateBits = (value) => {
+                    var convert = LogicalExpression.ConvertNumberToSet(value);
+                    while (convert.length < t.length) { convert.push(0); }
+                    while (convert.length > t.length) { convert.pop(); }
+                    convert.reverse();
+                    $.d.ProcessIterator(0, t.length - 1, j => {
+                        var o = t.table.code.GetContent(j, 1);
+                        o.find(".contentValue").html(convert[j]);
+                        if (convert[j] == 0) {
+                            o.removeClass("oneValue");
+                            o.addClass("zeroValue");
+                        }
+                        else {
+                            o.removeClass("zeroValue");
+                            o.addClass("oneValue");
+                        }
+                    });
+                    convert.reverse();
+                    var cutoff = LogicalExpression.ConvertSetToNatural(convert);
+                    if (cutoff < value) { t.numericEditor.code.SetValue(cutoff); }
+                    t.integerUpdater(value);
+                    t.setUpdater(convert);
+                };
+
+                t.table.code.SetContent(0, 1, "&nbsp;");
+                $.d.ProcessIterator(0, t.length - 1, i => {
+                    var cell = t.createCell(i);
+                    t.table.code.SetContent(i, 0, cell.indexCell);
+                    t.table.code.SetContent(i, 1, cell.valueCell);
+                });
+
+                t.updateNumeric();
+                t.numericEditor.code.SetUpdate(value => {
+                    updateBits(t.numericEditor.code.GetValue());
+                });
+
+                t.valueProvider = () => t.numericEditor.code.GetValue();
+                t.valueSetter = (value) => {
+                    t.numericEditor.code.SetValue(value);
+                    updateBits(value);
+                };
+                t.bitsSetter = (bits) => {
+                    t.numericEditor.code.SetValue(LogicalExpression.ConvertSetToNatural(bits));
+                    updateBits(t.numericEditor.code.GetValue());
+                };
+
+            },
+
+            SetValue: function (value) {
+                this.valueSetter(value);
+            },
+
+            GetValue: function () {
+                return this.valueProvider();
+            },
+
+            SetBits: function (bits) {
+                this.bitsSetter(bits);
+            },
+
+            GetBits: function () {
+                var t = this;
+                var bits = LogicalExpression.ConvertNumberToSet(t.numericEditor.code.GetValue());
+                while (bits.length < t.length) { bits.push(0); }
+                return bits;
+            },
+
+            GetBit: function (index) {
+                return this.set[index];
+            },
+
+            SetEditable: function (isEditable) {
+                this.isEditable = isEditable;
+                this.numericEditor.code.SetEditable(isEditable);
+            },
+
+            SetIntegerUpdater: function (updater) {
+                this.integerUpdater = (value) => updater(value);
+            },
+
+            SetSetUpdater: function (updater) {
+                this.setUpdater = (value) => updater(value);
+            },
+
+            GetLength: function () {
+                return this.table.GetColumnCount();
+            },
+
+            SetLength: function (length) {
+                var t = this;
+                if (length == null) { return; }
+                if (t.length == length) { return; }
+                t.length = length;
+                var table = t.table.code;
+
+                var columnCount = length - table.GetColumnCount();
+                if (columnCount > 0) { table.PrependColumns(columnCount); }
+                if (columnCount < 0) { table.DeleteLeftColumns(-1 * columnCount); }
+
+                $.d.ProcessIterator(0, columnCount - 1, i => { t.set.push(0); });
+                $.d.ProcessIterator(0, columnCount - 1, i => {
+                    var cell = t.createCell(i);
+                    table.SetContent(i, 0, cell.indexCell);
+                    table.SetContent(i, 1, cell.valueCell);
+                });
+                t.seriesNameContainer.find("> .seriesLength > label").html(t.length);
+                t.updateNumeric();
+            },
+
+            GetWidth: function () {
+                var t = this;
+                var adjustment = 0;
+                return t.table.code.GetTableWidth() + adjustment + 205;
+            },
+
+            GetHeight: function () {
+                var t = this;
+                return t.table.code.GetTableHeight() + 100;
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidBitSetVariable {
+            display: inline-block;
+            padding: 10px;
+        }
+
+            .FrigidBitSetVariable > * {
+                float: left;
+            }
+
+            .FrigidBitSetVariable > .seriesNameContainer {
+                float: left;
+                margin-right: 5px;
+                display: inline-block;
+                padding-top: 4px;
+            }
+
+                .FrigidBitSetVariable > .seriesNameContainer > .seriesName {
+                    font-size: 30px;
+                    float: left;
+                    margin-top: 14px;
+                }
+
+                .FrigidBitSetVariable > .seriesNameContainer > .seriesLength {
+                    font-size: 16px;
+                    /*float: left;
+                    margin-top: 34px;
+                    margin-left: 5px;*/
+                    width: 32px;
+                    overflow: hidden;
+                    position: relative;
+                    top: 36px;
+                    left: 4px;
+                    /*border: solid 1px;*/
+                }
+
+                .FrigidBitSetVariable > .seriesNameContainer > .seriesRepetition {
+                    font-size: 16px;
+                    /*float: left;
+                    margin-top: 15px;
+                    margin-left: -9px;*/
+                    width: 30px;
+                    overflow: hidden;
+                    position: relative;
+                    top: -6px;
+                    left: 4px;
+                    /*border: solid 1px;*/
+                }
+
+                .FrigidBitSetVariable > .seriesNameContainer > .injectorIndicator {
+                    border-top: solid 2px black;
+                    height: 0px;
+                    width: 16px;
+                    position: relative;
+                    /*float: left;
+                    margin-top: 46px;
+                    margin-left: -32px;*/
+                    top: 1px;
+                    left: -17px;
+                    overflow: hidden;
+                    height: 2px;
+                    padding: 0;
+                    /*border: solid 1px;*/
+                }
+
+                .FrigidBitSetVariable > .seriesNameContainer > .leadIndicator {
+                    height: 0px;
+                    position: relative;
+                    /*float: left;
+                    margin-top: 20px;
+                    margin-left: -32px;*/
+                    top: -23px;
+                    left: -17px;
+                    overflow: hidden;
+                    height: 10px;
+                    padding: 0;
+                    /*border: solid 1px;*/
+                }
+
+            .FrigidBitSetVariable .indicatorBar {
+                border-top: solid 2px black;
+                width: 16px;
+            }
+
+            .FrigidBitSetVariable .seriesEqual {
+                font-size: 30px;
+                float: left;
+                margin-top: 0px;
+                padding-top:20px;
+                padding-right:10px;
+                    margin-left: 0px;
+                /*position: relative;*/
+                /*top: -42px;
+                left: 60px;*/
+            }
+
+            .FrigidBitSetVariable > .valuesContainer {
+            }
+
+            .FrigidBitSetVariable > .numericContainer {
+                margin-left: 20px;
+            }
+
+                .FrigidBitSetVariable > .numericContainer .numericLabel {
+                    font-size: 16px;
+                    font-weight: 300;
+                }
+
+            .FrigidBitSetVariable .numericEquivalent {
+                font-size: 25px;
+            }
+
+                .FrigidBitSetVariable .numericEquivalent input {
+                    width: 65px;
+                }
+
+            .FrigidBitSetVariable > .valuesContainer .indexCell {
+                text-align: center;
+                width: 100%;
+                height: 100%;
+                padding-top: 2px;
+            }
+
+            .FrigidBitSetVariable > .valuesContainer .indexValue {
+                text-align: center;
+                padding-top: 2px;
+                border: solid 1px lightgray;
+                font-size: 24px;
+                width: 100%;
+                height: 100%;
+            }
+
+            .FrigidBitSetVariable > .valuesContainer .contentCover {
+                position: relative;
+                width: 40px;
+                height: 40px;
+                top: -35px;
+                left: -0px;
+                cursor: pointer;
+            }
+
+            .FrigidBitSetVariable > .valuesContainer .zeroValue {
+                /*background: linear-gradient(135deg, white 0%, white 85%, red 89.5%, red 90%, white 100%);*/
+                background: linear-gradient(135deg, white 0%, white 100%);
+            }
+
+            .FrigidBitSetVariable > .valuesContainer .oneValue {
+                /*background: linear-gradient(135deg, white 0%, white 85%, blue 89.5%, blue 90%, white 100%);*/
+                background: linear-gradient(135deg, white 0%, white 100%);
+            }
+    </style>
+
+</div>

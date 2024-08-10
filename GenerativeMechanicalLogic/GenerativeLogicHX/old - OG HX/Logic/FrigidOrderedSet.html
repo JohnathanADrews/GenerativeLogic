@@ -1,0 +1,149 @@
+﻿<div>
+    <div class="symbol">
+        <div class="name"><label></label></div>
+        <div class="setLength"><label></label></div>
+    </div>
+    <div class="definedAs"><label>=</label></div>
+    <div class="series">
+        <div class="leftSetClosure"><label>{</label></div>
+        <div class="orderedSetItems">
+
+        </div>
+        <div class="rightSetClosure"><label>}</label></div>
+    </div>
+
+    <div class="templates">
+        <div class="orderedSetItem">
+            <div class="itemName"><label></label></div>
+            <div class="itemIndex"><label></label></div>
+        </div>
+        <div class="orderedSetItemSeparator"><label>,</label></div>
+        <div class="orderedSetItemDots"><label>...</label></div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidOrderedSet() {
+            this.title = "Ordered Set Viewer";
+            this.name = "";
+            this.memberName = "";
+            this.expression = null;
+            this.length = 0;
+            this.series = new BitSeries("", 0, "", "", "");
+        }
+
+        FrigidOrderedSet.prototype = {
+
+            Start: function () {
+                var t = this;
+            },
+
+            Render: function () {
+                var t = this;
+
+
+                t.principal.find("> .symbol > .name label").html(this.series.name);
+                t.principal.find("> .symbol > .setLength label").html(this.series.abstractLength);
+                
+                var item = t.CreateTemplate("orderedSetItem");
+                item.find(".itemName label").html(t.series.memberName);
+                item.find(".itemIndex").html(t.series.abstractLength);
+                t.principal.find("> .series > .orderedSetItems").append(item);
+                
+                item = t.CreateTemplate("orderedSetItemSeparator");
+                t.principal.find("> .series > .orderedSetItems").append(item);
+                
+                item = t.CreateTemplate("orderedSetItemDots");
+                t.principal.find("> .series > .orderedSetItems").append(item);
+                
+                item = t.CreateTemplate("orderedSetItemSeparator");
+                t.principal.find("> .series > .orderedSetItems").append(item);
+                
+                item = t.CreateTemplate("orderedSetItem");
+                item.find(".itemName label").html(t.series.memberName);
+                item.find(".itemIndex").html(2);
+                t.principal.find("> .series > .orderedSetItems").append(item);                
+                
+                item = t.CreateTemplate("orderedSetItemSeparator");
+                t.principal.find("> .series > .orderedSetItems").append(item);
+                
+                item = t.CreateTemplate("orderedSetItem");
+                item.find(".itemName label").html(t.series.memberName);
+                item.find(".itemIndex").html(1);
+                t.principal.find("> .series > .orderedSetItems").append(item);
+
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidOrderedSet {
+            display:inline-block;
+            font-size:20px;
+        }
+        .FrigidOrderedSet >* {
+            float:left;
+        }
+        
+        .FrigidOrderedSet > .symbol > *{
+            float:left;
+        }
+        .FrigidOrderedSet > .symbol {
+            float:left;
+            margin-right:10px;
+        }
+
+        .FrigidOrderedSet > .series > *{
+            float:left;
+        }
+
+        .FrigidOrderedSet > .series > .orderedSetItems > *{
+            float:left;
+        }
+
+        .FrigidOrderedSet > .series > .orderedSetItems > .orderedSetItem {
+            margin-left:10px;
+        }
+
+        .FrigidOrderedSet > .series > .orderedSetItems > .orderedSetItem > .itemIndex {
+            margin-top:8px;
+            font-size:16px;
+            margin-left:2px;
+        }
+
+        .FrigidOrderedSet > .series > .orderedSetItems > .orderedSetItemDots {
+            margin-left:10px;
+        }
+
+        .FrigidOrderedSet > .series > .orderedSetItems > .orderedSetItemSeparator {
+            margin-left:2px;
+        }
+
+        .FrigidOrderedSet > .series > .orderedSetItems > .orderedSetItem > *{
+            float:left;
+        }
+
+        .FrigidOrderedSet > .series > .orderedSetItems{
+            float:left;
+            margin-right:10px;
+        }
+
+        .FrigidOrderedSet > .series > .leftSetClosure{
+            /*margin-right:10px;*/
+        }
+
+        .FrigidOrderedSet > .symbol > .setLength{
+            margin-top:8px;
+            font-size:16px;
+            margin-left:2px;
+        }
+
+        .FrigidOrderedSet > .definedAs{
+            margin-right:10px;
+        }
+    </style>
+
+</div>

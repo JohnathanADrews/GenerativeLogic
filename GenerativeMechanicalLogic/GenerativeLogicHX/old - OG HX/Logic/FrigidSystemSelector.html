@@ -1,0 +1,190 @@
+﻿<div>
+    <div class="systemSelector"><select></select></div>
+
+    <script class="codeObject">
+
+        function FrigidSystemSelector() {
+            this.title = "System Selector";
+            this.serializedSystems = {};
+            this.systemSelector = null;
+            this.updater = system => { };
+        }
+
+        FrigidSystemSelector.prototype = {
+
+            Start: function () {
+                var t = this;
+
+                t.systemSelector = t.principal.find(".systemSelector select");
+                t.systemSelector.on("change", () => {
+                    var pair = t.systemSelector.find("option:selected").data("series");
+                    //t.system = RecursionSystem.ParseFreeform(pair.value);
+                    t.updater(pair);
+                });
+
+            },
+
+            GetSelected: function () {
+                var t = this;
+                var pair = t.systemSelector.find("option:selected").data("series");
+                if (pair == null) { return null; }
+                return pair.value;
+            },
+
+            SetSelected: function (systemName) {
+                var t = this;
+                t.systemSelector.val(systemName);
+            },
+
+            SetUpdate: function (updater) {
+                this.updater = system => { updater(system); };
+            },
+
+            AddSystem: function (namedSerialization) {
+                var t = this;
+                t.serializedSystems[namedSerialization.name] = namedSerialization.value;
+                var option = $("<option></option>");
+                option.html(namedSerialization.name);
+                option.data("series", namedSerialization);
+                t.principal.find(".systemSelector select").append(option);
+            },
+
+            GetSystemCount: function () {
+                var t = this;
+                console.log("FrigidSystemSelector.GetSystemCount", t.serializedSystems);
+                var names = $.d.GetObjectMemberNames(t.serializedSystems);
+                console.log("FrigidSystemSelector.GetSystemCount2 ", names, t.serializedSystems);
+                return names.length;
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidSystemSelector {
+            display: inline-block;
+            background: rgba(255,255,255,.9);
+        }
+
+            .FrigidSystemSelector > .systemDisplay {
+                width: calc(100% - 0px);
+                display: inline-block;
+                overflow: hidden;
+                float: left;
+                border: solid 2px;
+                margin-right: 2px;
+            }
+
+            .FrigidSystemSelector > .systemInteractor {
+                width: calc(100% - 0px);
+                display: inline-block;
+                overflow: hidden;
+                float: left;
+                border: solid 2px;
+                margin-right: 2px;
+            }
+
+            .FrigidSystemSelector > .systemHeader {
+                width: 100%;
+                display: inline-block;
+                overflow: hidden;
+                border: solid 2px;
+                padding-top: 4px;
+                padding-bottom: 4px;
+            }
+
+                .FrigidSystemSelector > .systemHeader > * {
+                    float: left;
+                    margin-left: 10px;
+                }
+
+            .FrigidSystemSelector .groupNameSelector {
+                margin-left: 20px;
+                margin-top: 2px;
+                font-size: 20px;
+                display: inline-block;
+            }
+
+                .FrigidSystemSelector .groupNameSelector > * {
+                    float: left;
+                }
+
+                    .FrigidSystemSelector .groupNameSelector > *:last-child {
+                        margin-left: 5px;
+                    }
+
+            .FrigidSystemSelector > .systemOptions > .displayOption:hover {
+                background: linear-gradient(0deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.8) 100%);
+            }
+
+            .FrigidSystemSelector > .systemDisplay > .variablesContainer > * {
+                margin-right: 20px;
+            }
+
+            .FrigidSystemSelector > .systemDisplay > .functionsContianer > * {
+                width: 100%;
+            }
+
+            .FrigidSystemSelector .interactorHeader {
+                padding-left: 40px;
+                padding-top: 10px;
+                padding-bottom: 0px;
+                display: inline-block;
+                height: 44px;
+                width: 100%;
+            }
+
+                .FrigidSystemSelector .interactorHeader > * {
+                    float: left;
+                    margin-right: 10px;
+                }
+
+
+            .FrigidSystemSelector .interactorLength {
+                font-size: 20px;
+                padding-top: 3px;
+            }
+
+            .FrigidSystemSelector .interactorLengthValue {
+                font-size: 25px;
+            }
+
+                .FrigidSystemSelector .interactorLengthValue input {
+                    width: 65px;
+                }
+
+
+            .FrigidSystemSelector .repetitionCount {
+                font-size: 20px;
+                padding-top: 3px;
+                margin-left: 20px;
+            }
+
+            .FrigidSystemSelector .repetitionCountValue {
+                font-size: 25px;
+            }
+
+                .FrigidSystemSelector .repetitionCountValue input {
+                    width: 65px;
+                }
+
+            .FrigidSystemSelector .groupRepetitionsLabel {
+                padding-top: 34px;
+                padding-left: 10px;
+                font-size: 20px;
+            }
+
+            .FrigidSystemSelector .repetitionIncrementor {
+                padding-top: 34px;
+                padding-left: 10px;
+                font-size: 20px;
+            }
+
+                .FrigidSystemSelector .repetitionIncrementor input {
+                    width: 65px;
+                }
+    </style>
+
+</div>

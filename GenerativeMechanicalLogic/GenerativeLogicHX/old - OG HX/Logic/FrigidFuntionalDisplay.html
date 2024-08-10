@@ -1,0 +1,143 @@
+﻿<div>
+
+    <div class="outerDisplayContainer">
+        <div class="upperRow">
+            <div class="displayContainer expressionDisplay"><div class="innerContainer"></div></div>
+            <div class="displayContainer functionDisplay"><div class="innerContainer"></div></div>
+        </div>
+        <div class="lowerRow">
+            <div class="displayContainer tableDisplay"><div class="innerContainer"></div></div>
+        </div>
+    </div>
+
+
+    <div class="templates">
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidFuntionalDisplay() {
+            
+            this.expressionDisplay = null;
+            this.functionDisplay = null;
+            this.tableDisplay = null;
+        }
+
+        FrigidFuntionalDisplay.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.expressionDisplay = t.principal.find(".expressionDisplay");
+                t.functionDisplay = t.principal.find(".functionDisplay");
+                t.tableDisplay = t.principal.find(".tableDisplay");
+                
+                t.expressionManager = $.h.app.presentation.logic.getFrigidExpressionManager();
+                t.functionManager = $.h.app.presentation.logic.getFrigidFunctionManager();
+                t.displayTruthTable = $.h.app.presentation.logic.getFrigidTruthTable();
+                t.functionTruthTable = $.h.app.presentation.logic.getFrigidTruthTable();
+                
+                t.expressionDisplay.find(".innerContainer").append(t.expressionManager.view);
+                t.functionDisplay.find(".innerContainer").append(t.functionManager.view);
+                t.tableDisplay.find(".innerContainer").append(t.displayTruthTable.view);
+
+                t.expressionManager.code.SetUpdate(() => {
+                    var equations = t.expressionManager.code.GetEquations();
+                    console.log("FrigidFuntionalDisplay.Start - equations - ", equations);
+                    t.displayTruthTable.code.SetEquations(equations);
+                });
+                t.functionManager.code.SetUpdater(() => {
+                    var functions = t.functionManager.code.GetFunctions();
+                    console.log("FrigidFuntionalDisplay.Start - functions - ", functions);
+                    t.displayTruthTable.code.SetFunctions(functions);
+                });
+                               
+                //t.expressionManager.code.AddEquation(LogicalExpressionEquation.Parse("f = a XOR d"));
+                //t.expressionManager.code.AddEquation(LogicalExpressionEquation.Parse("g = b AND i"));
+                t.expressionManager.code.AddEquation(LogicalExpressionEquation.Parse("f = NOT ( a )"));
+                //t.expressionManager.code.AddEquation(LogicalExpressionEquation.Parse("g = b"));
+                //t.expressionManager.code.AddEquation(LogicalExpressionEquation.Parse("h = c"));
+                
+                var logicalFunction1 = LogicalFunction.Parse("f1={a,b,t}[0,0,1,0,1,0,1,1]");
+                var logicalFunction2 = LogicalFunction.Parse("f2[k]={a,b,c}[0,0,1,0,1,0,1,1]");
+                var logicalFunction3 = LogicalFunction.Parse("f3[x][y]={a,b,c}[0,0,1,0,1,0,1,1]");
+                var logicalFunction4 = LogicalFunction.Parse("F[][Q]={a,b,c}[0,0,1,0,1,0,1,1]");
+                var logicalFunction5 = LogicalFunction.Parse("F[Jrge][Q34t3]={a,b,c}[0,0,1,0,1,0,1,1]");
+                var logicalFunction6 = LogicalFunction.Parse("f1={a,b,c,x,y,z}[00000000,00011011,01010101,00011011,10101010,00011011,11111111,00011011]");
+                //t.functionManager.code.AddFunction(logicalFunction1);
+                //t.functionManager.code.AddFunction(logicalFunction2);
+                //t.functionManager.code.AddFunction(logicalFunction3);
+                //t.functionManager.code.AddFunction(logicalFunction4);
+                //t.functionManager.code.AddFunction(logicalFunction5);
+                t.functionManager.code.AddFunction(logicalFunction6);
+                
+                console.log("FrigidFuntionalDisplay.Start - ", t.expressionManager.code);
+
+                t.displayTruthTable.code.SetFunctionUpdateReporter(logicalFunction => t.functionManager.code.UpdateFunction(logicalFunction));
+                console.log("FrigidFuntionalDisplay.Start - ", logicalFunction1, logicalFunction2, logicalFunction3);
+                
+
+            }
+
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidFuntionalDisplay {
+            /*background-color: rgba(255,255,255,.99);*/
+            display: inline-block;
+            width: 100%;
+            padding-bottom: 2px;
+        }
+
+        .FrigidFuntionalDisplay * {
+            user-select: none;
+        }
+
+        .FrigidFuntionalDisplay .outerDisplayContainer{
+            width: 100%;
+            height:950px;
+            /*overflow-y:scroll;*/
+        }
+        .FrigidFuntionalDisplay .upperRow{
+            width: 100%;
+            /*height:50%;*/
+            display:inline-block;
+            height:calc(40% - 5px);
+        }
+        .FrigidFuntionalDisplay .lowerRow{
+            width: 100%;
+            display:inline-block;
+            height:calc(60% - 5px);
+            margin-top: 8px;
+        }
+
+        .FrigidFuntionalDisplay .expressionDisplay{
+            height:100%;
+            width:calc(50% - 10px);
+
+        }
+        .FrigidFuntionalDisplay .functionDisplay{
+            height:100%;
+            width:calc(50% - 10px);
+
+        }
+        .FrigidFuntionalDisplay .tableDisplay{
+            height:100%;
+            width:calc(100% - 10px);
+
+        }
+
+        .FrigidFuntionalDisplay .displayContainer {
+            background-color: rgba(255,255,255,.3);
+            border:solid 1px;
+            float:left;
+            overflow:hidden;
+            margin: 5px;
+        }
+
+    </style>
+
+</div>

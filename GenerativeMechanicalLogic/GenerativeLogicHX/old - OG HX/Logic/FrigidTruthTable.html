@@ -1,0 +1,894 @@
+﻿<div>
+    <div class="tableOperations">
+        <div class="moveVariableLeft"><label>&larr;</label></div>
+        <div class="moveVariableRight"><label>&rarr;</label></div>
+        <div class="updateTable disabledButton"><label>Update</label></div>
+        <!--<div class="clearExcessVariables"><label>Clear</label></div>-->
+    </div>
+    <div class="rendering ">
+        <div class="tableHeaderContainer"></div>
+        <div class="tableValueContainer"></div>
+    </div>
+    <div class="headerStorage hide"></div>
+    <div class="templates">
+        <!-- vh = variable header, fh = function header, v = variable value, f = function value, vb = vertical bar, hb = horizontal bar.  -->
+        <div class="vh c"><div class="vhb"><label></label></div></div>
+        <div class="eh rh c"><div class="ehb"><label></label></div></div>
+        <div class="fh rh c"><div class="fhb"><label></label></div></div>
+        <div class="v c"><label></label></div>
+        <div class="f c"><label></label></div>
+        <div class="f c"><label></label></div>
+        <div class="vb"></div>
+        <div class="hb"></div>
+    </div>
+
+    <script class="codeObject">
+
+        //templates.v = variable, templates.r = result.  shorthand to reduce space since there are many cells.
+        function FrigidTruthTable() {
+            this.title = "Truth Table";
+            this.rendering = null;
+            this.header = null;
+            this.rows = null;
+            this.states = null;
+            this.results = null;
+            this.arcticTableHeader = $.h.app.presentation.shared.arctic.getArcticTable();
+            this.arcticTable = $.h.app.presentation.shared.arctic.getArcticTable();
+            this.borderWidth = 2;
+            this.headerRowIndex = 0;
+            this.functionReporter = (logicalFunction) => { };
+
+            this.tableValueContainer = null;
+            this.updateTable = null;
+
+            this.equations = new Map();
+            this.functions = new Map();
+
+        }
+        FrigidTruthTable.GetUnaryOperatorsTable = function () {
+            var table = $.h.app.presentation.logic.getFrigidTruthTable();
+            var operand = LogicalExpression.CreateOperandVariableNode("a");
+            //table.code.AddOperand(operand);
+            var operators = $.d.GetObjectMemberNameValuePairs(LogicalOperator.Unary);
+            var equations = [];
+            $.d.ProcessArray(operators, operator => {
+                var equation = new LogicalExpressionEquation();
+                equation.name = operator.value.name;
+                equation.expression = new LogicalExpression();
+                equation.expression.root = LogicalExpression.CreateOperatorNode(operator.value);
+                equation.expression.description = operator.value.description;
+                equation.expression.root.operand = operand;
+                equations.push({ equation: equation, isActive:true });
+                //table.code.AddEquation(equation);
+            });
+            table.code.SetEquations(equations);
+            table.code.Update();
+            return table;
+        }
+        FrigidTruthTable.GetBinaryOperatorsTable = function () {
+            var pairs = $.d.GetObjectMemberNameValuePairs(LogicalOperator.Binary);
+            var table = $.h.app.presentation.logic.getFrigidTruthTable();
+            var operandA = LogicalExpression.CreateOperandVariableNode("a");
+            //table.code.AddOperand(operandA);
+            var operandB = LogicalExpression.CreateOperandVariableNode("b");
+            //table.code.AddOperand(operandB);
+            var equations = [];
+            $.d.ProcessArray(pairs, operator => {
+                var equation = new LogicalExpressionEquation();
+                equation.name = operator.value.name;
+                equation.expression = new LogicalExpression();
+                equation.expression.root = LogicalExpression.CreateOperatorNode(operator.value);
+                equation.expression.name = operator.value.name;
+                equation.expression.description = operator.value.description;
+                equation.expression.root.left = operandA;
+                equation.expression.root.right = operandB;
+                equations.push({ equation: equation, isActive:true });
+                //console.log("FrigidTruthTable.GetBinaryOperatorsTable 1 - ", equation, equation.expression, equation.expression.root, equation.expression.root.left,  equation.expression.root.right);
+            });
+            table.code.SetEquations(equations);
+            table.code.Update();
+            return table;
+        }
+
+        FrigidTruthTable.prototype = {
+
+            Start: function () {
+                var t = this;
+
+                t.updateTable = t.principal.find(".updateTable");
+                t.updateTable.on("click", () => { if (t.updateTable.hasClass("disabledButton")) { return; } t.Update(); });
+
+                t.rendering = t.principal.find("> .rendering");
+                t.rendering.find(".tableHeaderContainer").append(t.arcticTableHeader.view);
+                t.tableValueContainer = t.rendering.find(".tableValueContainer");
+                t.tableValueContainer.append(t.arcticTable.view);
+
+                t.arcticTableHeader.code.AppendRow();
+                t.arcticTableHeader.code.SetBaseRowHeight(30);
+                t.arcticTable.code.SetBaseRowHeight(24);
+                t.arcticTableHeader.code.AppendColumn();
+                t.arcticTableHeader.code.SetColumnWidth(0, t.borderWidth);
+                t.arcticTableHeader.code.SetContent(0, t.headerRowIndex, t.CreateTemplate("vb"));
+                
+                t.principal.find(".moveVariableLeft").on("click", () => {
+                    t.updateTable.removeClass("disabledButton");
+                    var selected = t.principal.find(".selectedVariableHeader");
+                    if (selected.length > 0) {
+                        var indices = t.arcticTableHeader.code.GetContentIndices($(selected[0]));    
+                        t.arcticTableHeader.code.MoveColumn(indices.column, indices.column - 1);
+                        return;
+                    }
+                    selected = t.principal.find(".selectedFunctionHeader");
+                    if (selected.length > 0) {
+                        var indices = t.arcticTableHeader.code.GetContentIndices($(selected[0]));                       
+                        var content = t.arcticTableHeader.code.GetContent(indices.column - 1, 0);
+                        if (!content.hasClass("rh")) { return; }
+                        t.arcticTableHeader.code.MoveColumn(indices.column, indices.column - 1);
+                    }
+                });
+                t.principal.find(".moveVariableRight").on("click", () => {
+                    t.updateTable.removeClass("disabledButton");
+                    var selected = t.principal.find(".selectedVariableHeader");
+                    if (selected.length > 0) {
+                        var indices = t.arcticTableHeader.code.GetContentIndices($(selected[0]));
+                        var content = t.arcticTableHeader.code.GetContent(indices.column + 1, 0);
+                        if (!content.hasClass("vh")) { return; }
+                        t.arcticTableHeader.code.MoveColumn(indices.column, indices.column + 1);
+                        return;
+                    }
+                    selected = t.principal.find(".selectedFunctionHeader");
+                    if (selected.length > 0) {
+                        var indices = t.arcticTableHeader.code.GetContentIndices($(selected[0]));       
+                        t.arcticTableHeader.code.MoveColumn(indices.column, indices.column + 1);
+                    }
+                });
+                
+                t.RenderingWidthSetter();
+            },
+
+            SetEquations: function (equations) {
+                var t = this;
+                console.log("FrigidTruthTable.SetEquations  1 - ", t.equations, equations);
+                t.equations.clear();
+                $.d.ProcessArray(equations, equationData => { t.equations.set(equationData.equation, equationData); });                
+                t.UpdateEquations();
+                t.updateTable.removeClass("disabledButton");
+                t.RenderingWidthSetter();
+            },
+
+            AddEquation: function (equation) {
+                var t = this;
+            },
+
+            RemoveEquation: function (name) {
+
+            },
+
+            AddFunction: function (binaryFunction) {
+
+            },
+
+            RemoveFunction: function (name) {
+
+            },
+
+            SetFunctions: function (functions) {
+                var t = this;
+                //console.log("FrigidTruthTable.SetFunctions  1 - ", t.functions, functions);
+                t.functions.clear();
+                $.d.ProcessArray(functions, functionData => { t.functions.set(functionData.logicalFunction, functionData); });                
+                t.UpdateFunctions();
+                t.updateTable.removeClass("disabledButton");
+                t.RenderingWidthSetter();
+            },
+
+            Render: function () {
+                var t = this;
+                t.Update();
+            },
+
+            RenderingWidthSetter: function () {
+                var t = this;
+                t.rendering.attr("style", "width:" + (t.arcticTableHeader.code.GetTableWidth() + 20) + ";");
+            },
+
+            HeaderWidthSetter: function (columnIndex, name) {
+                var t = this;
+                if (name.length < 2) { return; }
+                var width = 14 + name.length * 8.5;
+                t.arcticTableHeader.code.SetColumnWidth(columnIndex, width);
+                t.arcticTableHeader.code.UpdateDimensions();
+            },
+
+            ValuesWidthSetter: function () {
+                var t = this;
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    t.arcticTable.code.SetColumnWidth(j, t.arcticTableHeader.code.GetColumnWidth(j));
+                });
+                t.arcticTable.code.UpdateDimensions();
+            },
+
+            UpdateEquations: function () {
+                var t = this;
+
+                var equationAdder = (equation) => {     
+                    //console.log("equation 3434t34 - ", equation);
+                    var columnIndex = t.arcticTableHeader.code.AppendColumn();
+                    var cell = t.CreateTemplate("eh");
+                    cell.find(" label").html(equation.name);
+                    cell.data("equation", equation);
+                    t.arcticTableHeader.code.SetContent(columnIndex, t.headerRowIndex, cell);
+                    t.HeaderWidthSetter(columnIndex, equation.name);
+                    cell.on("click", () => {
+                        var deselect = false;
+                        if (cell.find("> *").hasClass("selectedFunctionHeader")) { deselect = true; }
+                        t.arcticTableHeader.view.find(".vhb").removeClass("selectedVariableHeader");
+                        t.arcticTableHeader.view.find(".fhb").removeClass("selectedFunctionHeader");
+                        t.arcticTableHeader.view.find(".ehb").removeClass("selectedFunctionHeader");
+                        if (!deselect) { cell.find(".ehb").addClass("selectedFunctionHeader"); }
+                    });
+                };
+
+                var equationMap = new Map();
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var content = $(t.arcticTableHeader.code.GetContent(j, t.headerRowIndex));
+                    var equation = content.data("equation");
+                    if (content.hasClass("eh")) {
+                        equationMap.set(equation, content);
+                        if (t.equations.has(equation)) {
+                            if (t.equations.get(equation).isActive) { content.removeClass("ehi"); }
+                            else { content.addClass("ehi"); }
+                        }
+                    }
+                });
+                var deletes = [];
+                var adds = [];
+                equationMap.forEach((value, key, map) => { if (!t.equations.has(key)) { deletes.push(key); } });
+                t.equations.forEach((value, key, map) => { if (!equationMap.has(key)) { adds.push(key); } });
+                $.d.ProcessArray(deletes, deq => t.arcticTableHeader.code.DeleteColumnContaining(deq));
+                $.d.ProcessArray(adds, equation => equationAdder(equation));
+                t.UpdateHeaderVariables();
+            },
+
+            UpdateFunctions: function () {
+                var t = this;
+                //console.log("FrigidTruthTable.UpdateFunctions 1  - ", t.functions);
+
+                var functionAdder = (logicalFunction) => {
+                    var columnIndex = t.arcticTableHeader.code.AppendColumn();
+                    var cell = t.CreateTemplate("fh");
+                    cell.find(" label").html(logicalFunction.name);
+                    cell.data("function", logicalFunction);
+                    t.arcticTableHeader.code.SetContent(columnIndex, t.headerRowIndex, cell);
+                    t.HeaderWidthSetter(columnIndex, logicalFunction.name);
+                    cell.on("click", () => {
+                        var deselect = false;
+                        if (cell.find("> *").hasClass("selectedFunctionHeader")) { deselect = true; }
+                        t.arcticTableHeader.view.find(".vhb").removeClass("selectedVariableHeader");
+                        t.arcticTableHeader.view.find(".fhb").removeClass("selectedFunctionHeader");
+                        t.arcticTableHeader.view.find(".ehb").removeClass("selectedFunctionHeader");
+                        if (!deselect) { cell.find(".fhb").addClass("selectedFunctionHeader"); }
+                    });
+                };
+
+                var functionMap = new Map();
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var content = $(t.arcticTableHeader.code.GetContent(j, t.headerRowIndex));
+                    var logicalFunction = content.data("function");
+                    if (content.hasClass("fh")) {
+                        functionMap.set(logicalFunction, content);
+                        if (t.functions.has(logicalFunction)) {
+                            if (t.functions.get(logicalFunction).isActive) { content.removeClass("fhi"); }
+                            else { content.addClass("fhi"); }
+                        }
+                    }
+                });
+                var deletes = [];
+                var adds = [];
+                functionMap.forEach((value, key, map) => { if (!t.functions.has(key)) { deletes.push(key); } });
+                t.functions.forEach((value, key, map) => { if (!functionMap.has(key)) { adds.push(key); } });
+                $.d.ProcessArray(deletes, deq => t.arcticTableHeader.code.DeleteColumnContaining(deq));
+                $.d.ProcessArray(adds, logicalFunction => functionAdder(logicalFunction));
+                t.UpdateHeaderVariables();
+            },
+
+            //Update variables for both equations and functions.
+            UpdateHeaderVariables: function () {
+                var t = this;
+
+                var variables = {};
+                t.equations.forEach((value, key, map) => {
+                    var expressionVariables = key.expression.GetVariables();
+                    $.d.ProcessArray($.d.GetObjectMemberNames(expressionVariables), variable => {
+                        if (variables[variable] == null) { variables[variable] = { variable: variable, isActive: value.isActive }; }
+                        else if (value.isActive) { variables[variable].isActive = true; }
+                    });
+                });
+                t.functions.forEach((value, key, map) => {
+                    var functionVariables = key.GetVariables();
+                    $.d.ProcessArray(functionVariables, variable => {
+                        if (variables[variable] == null) { variables[variable] = { variable: variable, isActive: value.isActive }; }
+                        else if (value.isActive) { variables[variable].isActive = true; }
+                    });
+                });
+                var nextVariableIndex = 0;
+                var deletes = [];
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {                    
+                    var content = $(t.arcticTableHeader.code.GetContent(j, t.headerRowIndex));
+                    if (content.hasClass("vh")) {
+                        var tableVariable = $(content.find("label")).html();
+                        if (variables[tableVariable].isActive) { content.removeClass("vhi"); }
+                        else { content.addClass("vhi"); }
+                        if (variables[tableVariable] == null) { deletes.push(content); }
+                        delete variables[tableVariable];
+                    }
+                    else { nextVariableIndex = j; return false; }
+                });
+                $.d.ProcessArray($.d.GetObjectMemberNames(variables), variable => {
+                    t.arcticTableHeader.code.InsertColumn(nextVariableIndex);
+                    var cell = t.CreateTemplate("vh");
+                    cell.find(" label").html(variable);
+                    cell.data("variable", variable);
+                    t.arcticTableHeader.code.SetContent(nextVariableIndex, t.headerRowIndex, cell);
+                    t.HeaderWidthSetter(nextVariableIndex, variable);
+                    if (!variables[variable].isActive) { cell.addClass("vhi"); }
+                    cell.on("click", () => {
+                        var deselect = false;
+                        if (cell.find(".vhb").hasClass("selectedVariableHeader")) { deselect = true; }
+                        t.arcticTableHeader.view.find(".vhb").removeClass("selectedVariableHeader");
+                        t.arcticTableHeader.view.find(".fhb").removeClass("selectedFunctionHeader");
+                        t.arcticTableHeader.view.find(".ehb").removeClass("selectedFunctionHeader");
+                        if (!deselect) { cell.find(".vhb").addClass("selectedVariableHeader"); }
+                    });
+                    nextVariableIndex++;
+                });
+                $.d.ProcessArray(deletes, content => t.arcticTableHeader.code.DeleteColumnContaining(content));
+
+            },
+
+            Update: function () {
+                var t = this;
+                t.UpdateTableVariables();
+                t.UpdateTableValues();
+                t.ValuesWidthSetter();
+            },
+
+            UpdateTableVariables: function () {
+                 var t = this;
+
+                t.updateTable.addClass("disabledButton");
+
+                //Setup the values
+                var variables = [];
+                var stateIndices = [];
+                var barIndex = 0;
+                var changed = false;
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var content = $(t.arcticTableHeader.code.GetContent(j, t.headerRowIndex));
+                    if (!content.hasClass("vh")) { barIndex = j; return false; }
+                    if (content.hasClass("vhi")) {
+                        if (t.arcticTable.code.GetContent(j, 0) == null || t.arcticTable.code.GetContent(j, 0).hasClass("v")) { changed = true; }
+                        return;
+                    }
+                    stateIndices.push(j);
+                    variables.push(content.find("label").html());
+                });
+                if (t.arcticTable.code.GetRowCount() == (1 << variables.length) && !changed) { return; }
+                
+                t.tableValueContainer.addClass("hide");
+                t.arcticTable.code.DeleteAllCells();
+                t.arcticTable.code.ClearColumnWidths();
+
+                var states = LogicalExpression.CreateStateSpaceValues(variables.length);
+                //Columns for variables + one for the bar.
+                t.arcticTable.code.AppendColumns(variables.length+1);
+                t.arcticTable.code.AppendRows(states.length);
+                t.tableValueContainer.data("states", states);
+
+                var columnIndex = 0;
+                var rowIndex = 0;
+
+                $.d.ProcessArray(states, state => {
+                    columnIndex = 0;
+                    $.d.ProcessReverseArray(state, value => {
+                        var cell = t.CreateTemplate("v");
+                        cell.find("label").html(value);
+                        if (value == 0) { cell.addClass("vz"); }
+                        else { cell.addClass("vo"); }
+                        t.arcticTable.code.SetContent(stateIndices[columnIndex], rowIndex, cell);
+                        columnIndex++;
+                    });
+                    t.arcticTable.code.SetContent(barIndex, rowIndex, t.CreateTemplate("vb"));
+                    rowIndex++;
+                });
+
+                t.tableValueContainer.removeClass("hide");
+            },
+
+            UpdateTableValues: function () {
+                var t = this;
+                
+                t.tableValueContainer.addClass("hide");
+                var states = t.tableValueContainer.data("states");
+                var values = {};
+                
+                var variables = [];
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var content = $(t.arcticTableHeader.code.GetContent(j, t.headerRowIndex));
+                    if (!content.hasClass("vh")) { return false; }
+                    if (content.hasClass("vhi")) { return; }
+                    variables.push(content.find("label").html());
+                });
+                var resultMakers = [];
+                var resultTypes = {};
+                resultTypes.equation = 1;
+                resultTypes.function = 2;
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var content = $(t.arcticTableHeader.code.GetContent(j, t.headerRowIndex));
+                    if (content.hasClass("rh")) {
+                        var resultMaker = { index: j, isEditable: false };
+                        if (content.hasClass("eh")) { resultMaker.type = resultTypes.equation; resultMaker.equation = content.data("equation"); resultMaker.equation.expression.CreateEvaluationPlan(); resultMaker.isActive = !content.hasClass("ehi")}
+                        if (content.hasClass("fh")) { resultMaker.type = resultTypes.function; resultMaker.logicalFunction = content.data("function"); resultMaker.isEditable = true; resultMaker.isActive = !content.hasClass("fhi") }
+                        resultMakers.push(resultMaker);
+                    }
+                });
+                t.arcticTable.code.AppendColumns(t.arcticTableHeader.code.GetColumnCount() - t.arcticTable.code.GetColumnCount());
+
+                var rowIndex = 0;
+                $.d.ProcessArray(states, state => {
+                    $.d.ProcessIterator(0, state.length - 1, j => { values[variables[j]] = state[state.length - j - 1]; });
+                    
+                    $.d.ProcessArray(resultMakers, resultMaker => {
+                        if (!resultMaker.isActive) {
+                            t.arcticTable.code.BlankCell(resultMaker.index, rowIndex);
+                            return;
+                        }
+                        var value = 0;
+                        if (resultMaker.type == resultTypes.equation) {
+                            resultMaker.equation.expression.SetValues(values);
+                            value = resultMaker.equation.expression.Evaluate();
+                        }
+                        else if (resultMaker.type == resultTypes.function) {
+                            value = resultMaker.logicalFunction.GetValue(values);
+                        }
+                        var cell = t.CreateTemplate("f");
+                        cell.find("label").html(value);
+                        if (value == 0) { cell.addClass("vz"); }
+                        else { cell.addClass("vo"); }
+                        if (resultMaker.isEditable === true) { t.SetupCellUpdate(cell, resultMaker.logicalFunction); }
+                        t.arcticTable.code.SetContent(resultMaker.index, rowIndex, cell);
+                    });
+                        rowIndex++;
+                });
+                t.tableValueContainer.removeClass("hide");
+            },
+
+            GetVariables: function (onlyActive) {
+                var t = this;
+                var variables = [];
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var content = t.arcticTableHeader.code.GetContent(j, 0);
+                    if (!content.hasClass("vh")) { return false; }
+                    if (onlyActive === true && content.hasClass("vhi")) { return; }
+                    variables.push(content.data("variable"));
+                });
+                return variables;
+            },
+
+            OrderVariables: function (variables) {
+                var t = this;
+                var storage = t.principal.find(".headerStorage");
+                var tableVariables = {};
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var cell = t.arcticTableHeader.code.GetContent(j, 0);
+                    if (!cell.hasClass("vh")) { return false; }
+                    tableVariables[cell.data("variable")] = cell;
+                    storage.append(cell);
+                });
+                $.d.ProcessIterator(0, variables.length - 1, j => { t.arcticTableHeader.code.SetContent(j, 0, tableVariables[variables[j]]); });
+                t.ReadyUpdate();
+            },
+
+            OrderFunctions: function (functions) {
+                var t = this;
+                var storage = t.principal.find(".headerStorage");
+                var tableFunctions = {};
+                var start = -1;
+                $.d.ProcessIterator(0, t.arcticTableHeader.code.GetColumnCount() - 1, j => {
+                    var cell = t.arcticTableHeader.code.GetContent(j, 0);
+                    if (!cell.hasClass("rh")) { return; }
+                    if (start == -1) { start = j; }
+                    tableFunctions[cell.data("equation").name] = cell;
+                    storage.append(cell);
+                });
+                $.d.ProcessIterator(0, functions.length - 1, j => { t.arcticTableHeader.code.SetContent(start + j, 0, tableFunctions[functions[j]]); });
+            },
+
+            ComputeFunctions: function () {
+                var t = this;
+                t.updateTable.addClass("disabledButton");
+            },
+
+            ReadyUpdate: function () {
+                var t = this;
+                t.updateTable.removeClass("disabledButton");
+            },
+
+            SetupCellUpdate: function (cell, logicalFunction) {
+                var t = this;
+                cell.addClass("cellPointable");
+                cell.on("click", () => { t.UpdateFunctionCell(cell, logicalFunction); });
+            },
+
+            UpdateFunctionCell: function (cell, logicalFunction) {
+                var t = this;
+                var cellIndices = t.arcticTable.code.GetContentIndices(cell);
+                var variables = t.GetRowVariableValues(cellIndices.row);
+                var vaiablesArray = $.d.GetObjectMemberNames(variables);
+                var others = {};
+                var indices = [];
+                $.d.ProjectOnto(variables, others);
+                $.d.ProcessArray(logicalFunction.variables, variable => { delete others[variable]; });
+                var otherArray = $.d.GetObjectMemberNames(others);
+                $.d.ProcessIterator(0, (1 << otherArray.length) - 1, i => {
+                    var index = i;
+                    $.d.ProcessArray(otherArray, other => {
+                        variables[other] = index & 1;
+                        index = index >> 1;
+                    });
+                    $.d.Iterate(vaiablesArray.length - 1,0,  j => {
+                        index = index << 1;
+                        index += variables[vaiablesArray[j]];
+                    });
+                    indices.push(index);
+                });
+                var next = 0;
+                if (cell.hasClass("vz")) { next = 1; }
+                $.d.ProcessArray(indices, i => {
+                    var updated = t.arcticTable.code.GetContent(cellIndices.column, i);
+                    if (next == 0) {
+                        updated.removeClass("vo");
+                        updated.addClass("vz");
+                        updated.find("label").html(LogicalFunction.BitValue.Zero);
+                    }
+                    else {
+                        updated.addClass("vo");
+                        updated.removeClass("vz");
+                        updated.find("label").html(LogicalFunction.BitValue.One);
+                    }
+                });
+                logicalFunction.SetValueByVariables(variables, next == 0 ? LogicalFunction.BitValue.Zero :  LogicalFunction.BitValue.One);
+                t.functionReporter(logicalFunction);
+            },
+
+            GetRowVariableValues: function (rowIndex) {
+                var t = this;
+                var variables = t.GetVariables(true);
+                //console.log("FrigidTruthTable.GetRowVariableValues - ", rowIndex, variables);
+                var result = {};
+                $.d.ProcessReverseIterator(variables.length - 1, 0, i => {
+                    result[variables[i]] = rowIndex & 1;
+                    rowIndex = rowIndex >> 1;
+                });
+                return result;
+            },
+
+            SetFunctionUpdateReporter: function (reporter) {
+                this.functionReporter = (logicalFunction) => { reporter(logicalFunction); };
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidTruthTable {
+            background-color: rgba(255,255,255,.99);
+            display: inline-block;
+            width: 100%;
+            padding-bottom: 2px;
+        }
+
+            .FrigidTruthTable * {
+                user-select: none;
+            }
+            
+            .FrigidTruthTable .orderedHeader {
+                width: 100%;
+                display: inline-block;
+                overflow: hidden;
+                height: 30px;
+                margin-top: 2px;
+            }
+
+                .FrigidTruthTable .orderedHeader > * {
+                    float: left;
+                    margin-right: 10px;
+                }
+
+            .FrigidTruthTable .orderedDivider {
+                width: 0px;
+                height: 100%;
+                margin-top: 2px;
+                border: solid 1px;
+            }
+
+            .FrigidTruthTable .headerOrder {
+                display: inline-block;
+                border-top: solid 1px gray;
+                border-bottom: solid 1px gray;
+            }
+
+            .FrigidTruthTable .headerOrderContainer {
+                min-width: 30px;
+                min-height: 28px;
+                padding-left: 10px;
+                padding-right: 8px;
+                float: left;
+                display: inline-block;
+            }
+
+                .FrigidTruthTable .headerOrderContainer > * {
+                    float: left;
+                    margin-right: 2px;
+                }
+
+                .FrigidTruthTable .headerOrderContainer * {
+                    cursor: pointer;
+                }
+
+                    .FrigidTruthTable .headerOrderContainer *:hover {
+                        background-color: #b0ebba;
+                    }
+
+                .FrigidTruthTable .headerOrderContainer .variableName {
+                    font-size: 20px;
+                    text-align: center;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+
+                    .FrigidTruthTable .headerOrderContainer .variableName:hover {
+                        background-color: #b0ebba;
+                    }
+
+                .FrigidTruthTable .headerOrderContainer .functionName {
+                    font-size: 20px;
+                    text-align: center;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+
+                    .FrigidTruthTable .headerOrderContainer .functionName:hover {
+                        background-color: #b0ebba;
+                    }
+
+
+
+            .FrigidTruthTable .tableOperations {
+                width: 100%;
+                display: inline-block;
+                margin-top: 2px;
+            }
+
+                .FrigidTruthTable .tableOperations > * {
+                    float: left;
+                    margin-left: 10px;
+                    border: solid 1px;
+                    border-radius: 4px;
+                    text-align: center;
+                    height: 25px;
+                }
+
+                    .FrigidTruthTable .tableOperations > *:hover {
+                        background-color: yellow;
+                    }
+
+                .FrigidTruthTable .tableOperations * {
+                    cursor: pointer;
+                }
+
+            .FrigidTruthTable .moveVariableLeft {
+                padding-left: 10px;
+                padding-right: 10px;
+                font-size: 40px;
+                font-weight: bold;
+                overflow:hidden;
+            }
+
+                .FrigidTruthTable .moveVariableLeft:hover {
+                    background-color: yellow;
+                }
+
+                .FrigidTruthTable .moveVariableLeft label {
+                    margin-top: -20px;
+                }
+
+            .FrigidTruthTable .moveVariableRight {
+                padding-left: 10px;
+                padding-right: 10px;
+                font-size: 40px;
+                font-weight: bold;
+            }
+
+                .FrigidTruthTable .moveVariableRight:hover {
+                    background-color: yellow;
+                }
+
+                .FrigidTruthTable .moveVariableRight label {
+                    margin-top: -20px;
+                }
+
+            .FrigidTruthTable .updateTable {
+                padding-left: 10px;
+                padding-right: 10px;
+                padding-top: 2px;
+            }
+
+                .FrigidTruthTable .updateTable:hover {
+                    background-color: yellow;
+                }
+
+            .FrigidTruthTable > .rendering {
+                border-right: solid 2px black;
+                margin-top: 2px;
+                background-color: black;
+            }
+
+            .FrigidTruthTable .tableHeaderContainer {
+                width: 100%;
+                display: inline-block;
+            }
+
+            .FrigidTruthTable .tableValueContainer {
+                width: 100%;
+                overflow-y: scroll;
+                height:calc(100% - 60px);
+                background-color: transparent;
+                display: inline-block;
+            }
+
+
+            .FrigidTruthTable .c {
+                width: 100%;
+                height: 100%;
+                text-align: center;
+            }
+
+            .FrigidTruthTable .vh {
+                border: solid 1px gray;
+                background: linear-gradient(180deg, white 0%, white 80%, darkgray 81%, white 84%, darkgray 100%);
+                display: inline-block;
+                cursor: pointer;
+            }
+
+            .FrigidTruthTable .vhi{
+                background: linear-gradient(180deg, white 0%, white 80%, purple 81%, white 84%, purple 100%);
+            }
+
+                .FrigidTruthTable .vh * {
+                    cursor: pointer;
+                }
+
+            .FrigidTruthTable .vhb {
+                background-color: rgba(255,255,255,.2);
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                padding-top: 3px;
+                display: inline-block;
+            }
+
+            .FrigidTruthTable .selectedVariableHeader {
+                /*background: linear-gradient(180deg, rgba(176, 235, 186,1) 0%, rgba(176, 235, 186,1) 80%, rgba(150,150,150,1) 81%, rgba(255, 255, 255,1) 84%, darkgray 100%);*/
+                /*background: linear-gradient(180deg, rgba(176, 235, 186,1) 0%, rgba(176, 235, 186,1) 80%, #00e9f8 81%, rgba(255, 255, 255,1) 84%, #00e9f8 100%);*/
+                background: linear-gradient(180deg, rgba(176, 235, 186,1) 0%, rgba(176, 235, 186,1) 80%, transparent 81%, rgba(255, 255, 255,1) 84%, transparent 100%);
+            }
+
+            .FrigidTruthTable .fh {
+                border: solid 1px gray;
+                background: linear-gradient(180deg, white 0%, white 80%, blue 81%, white 84%, blue 100%);
+                cursor: pointer;
+            }
+
+            .FrigidTruthTable .fhi {
+                border: solid 1px gray;
+                background: linear-gradient(180deg, white 0%, white 80%, #e56900 81%, white 84%, #e56900 100%);
+                cursor: pointer;
+            }
+
+                .FrigidTruthTable .fh * {
+                    cursor: pointer;
+                }
+
+            .FrigidTruthTable .fhb {
+                background-color: rgba(255,255,255,.2);
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                padding-top: 3px;
+                display: inline-block;
+            }
+            
+            .FrigidTruthTable .eh {
+                border: solid 1px gray;
+                background: linear-gradient(180deg, white 0%, white 80%, green 81%, white 84%, green 100%);
+                cursor: pointer;
+            }
+            .FrigidTruthTable .ehi {
+                border: solid 1px gray;
+                background: linear-gradient(180deg, white 0%, white 80%, red 81%, white 84%, red 100%);
+                cursor: pointer;
+            }
+
+                .FrigidTruthTable .eh * {
+                    cursor: pointer;
+                }
+
+            .FrigidTruthTable .ehb {
+                background-color: rgba(255,255,255,.2);
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                padding-top: 3px;
+                display: inline-block;
+            }
+
+            .FrigidTruthTable .selectedFunctionHeader {
+                /*background: linear-gradient(180deg, rgba(176, 235, 186,1) 0%, rgba(176, 235, 186,1) 80%, #00e9f8 81%, rgba(255, 255, 255,1) 84%, #00e9f8 100%);*/
+                background: linear-gradient(180deg, rgba(176, 235, 186,1) 0%, rgba(176, 235, 186,1) 80%, transparent 81%, rgba(255, 255, 255,1) 84%, transparent 100%);
+                /*background: linear-gradient(180deg, rgba(176, 235, 186,1) 0%, rgba(176, 235, 186,1) 80%, rgba(150,150,150,1) 81%, rgba(255, 255, 255,1) 84%, darkgray 100%);*/
+            }
+
+            .FrigidTruthTable .v {
+                border: solid 1px gray;
+                padding-top: 2px;
+            }
+
+            .FrigidTruthTable .f {
+                border: solid 1px gray;
+                background-color: white;
+            }
+
+            .FrigidTruthTable .hb {
+                width: 100%;
+                border-bottom: solid 2px black;
+            }
+
+            .FrigidTruthTable .vb {
+                height: 100%;
+                border-left: solid 2px black;
+            }
+
+            .FrigidTruthTable .vz {
+                color: #ff0000;
+                background-color: #dde8ed;
+            }
+
+            .FrigidTruthTable .vo {
+                color: blue;
+                background-color: white;
+            }
+
+            .FrigidTruthTable .disabledButton {
+                background: linear-gradient(180deg, #b1b4b3 0%, #b1b4b3 100%);
+                cursor: initial;
+            }
+
+                .FrigidTruthTable .disabledButton > * {
+                    cursor: initial;
+                }
+
+        .FrigidTruthTable .cellPointable{
+            cursor:pointer;
+        }
+        .FrigidTruthTable .cellPointable *{
+            cursor:pointer;
+        }
+    </style>
+
+</div>

@@ -1,0 +1,107 @@
+﻿
+<hx h-proxy="update" />
+<hx h-proxy="setVariables" />
+<hx h-proxy="addFunction" />
+<hx h-proxy="addFunctions" />
+
+
+<hx h-presenter="Control/HeaderTable" h-handle="table" />
+
+<div h-clone="variableHeader"><label h-handle="name"></label></div>
+<div h-clone="functionHeader"><label h-handle="name"></label></div>
+<div h-clone="variableValue"><label h-handle="value"></label></div>
+<div h-clone="functionValue"><label h-handle="value"></label></div>
+<div h-clone="verticalBar"></div>
+<div h-clone="hotizontalBar"></div>
+
+<script>
+
+    function TruthTable() {
+        this.variables = [];
+        this.functions = [];
+    }
+
+    TruthTable.prototype = {
+
+        start: function () {
+            var t = this;
+
+            console.log("GenerativeLogicEntry.start - ", t);
+
+            t.table.proxy.appendColumns(10);
+            t.table.proxy.appendRows(10);
+        },
+
+        setVariables: function (variables) {
+            var t = this;
+
+            t.variables = variables;
+
+        },
+
+        addFunction: function (binaryFunction) {
+            var t = this;
+
+        },
+
+        addFunctions: function (binaryFunctions) {
+            var t = this;
+
+        },
+
+        /* Updates the table using the variables and functions */
+        update: function () {
+            var t = this;
+
+
+            t.table.proxy.clear();
+            t.table.proxy.appendColumns(t.variables.length + t.functions.length + 1);
+
+            //algorithm.control.processIterator(0, t.variables.length - 1, i => {
+
+            //    t.table.clear();
+            //    appendColumns
+
+            //});
+            //algorithm.control.processIterator(0, t.rowCount - 1, i => { });
+
+            //if (variables.length > t.variables.length) {
+
+            //}
+
+            //algorithm.control.processArray(t.variables, variable => {
+
+            //});
+
+            //Add 1 for bar.
+            //var columns = t.variables.length + t.functions.length + 1;
+
+
+            //algorithm.control.processArray(t.variables, variable => {
+
+            //});
+        },
+
+        computeHeaders: function () {
+
+        },
+
+        computeValues: function () {
+
+        }
+
+    }
+
+</script>
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+    .textContent {
+        border-color: lightgray;
+    }
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+    .textContent {
+        border-color: lightgray;
+    }
+</style>

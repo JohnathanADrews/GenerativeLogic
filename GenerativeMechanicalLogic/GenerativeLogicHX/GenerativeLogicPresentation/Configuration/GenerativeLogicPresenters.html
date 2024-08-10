@@ -1,0 +1,14 @@
+﻿
+
+<hx h-presenter-configuration="GenerativeLogicPresentation-GenerativeLogicPresenters-Config" h-presenter-set="GenerativeLogicPresenters">
+
+    <hx h-import-presenter="GenerativeLogicCore" h-import-set="Logic" h-frame="GenerativeLogicCore.Logic"></hx>
+    <hx h-presenter-frame="GenerativeLogicCore.Logic" h-attach="frame" h-handle="generativeLogic.logic"></hx>
+
+    <hx h-import-presenter="GenerativeLogicCore" h-import-set="Control" h-frame="GenerativeLogicCore.Control"></hx>
+    <hx h-presenter-frame="GenerativeLogicCore.Control" h-attach="frame" h-handle="generativeLogic.control"></hx>
+
+    <hx h-import-script="GenerativeLogicCore" h-import-set="Algorithm" h-frame="fAlgorithm"></hx>
+    <hx h-script-frame="fAlgorithm" h-attach="frame" h-handle="algorithm" h-assign="new API();"></hx>
+
+</hx>

@@ -1,0 +1,138 @@
+﻿
+<hx h-publisher="ItemSelected" />
+<hx h-proxy="setAttachElement" />
+<hx h-proxy="show" />
+<hx h-proxy="hide" />
+<hx h-proxy="addItem" />
+
+<div class="optionsContainer" h-handle="optionsContainer"></div>
+
+<div h-clone="menuItem" class="menuItem" >
+    <label h-handle="itemTitle"></label>
+</div>
+
+<script>
+
+    function ContextMenu() {
+        this.items = new Map();
+    }
+
+    ContextMenu.prototype = {
+
+        start: function (options) {
+
+            var t = this;
+            //console.log("ContextMenu - ", options, t);
+        },
+
+        setAttachElement: function(attachElement){
+            var t = this;
+            attachElement.addEventListener("contextmenu", (e) => {
+                //console.log("ContextMenu.setAttachElement - contextmenu - ", attachElement, t);
+                //console.log("ContextMenu.setAttachElement - contextmenu - e ", e);
+                e.preventDefault();
+                t.show({
+                    left: (e.clientX - 10),
+                    top: (e.clientY - 10)
+                });
+            });
+            t.hularion.window.document.addEventListener("click", (e) => {
+                t.hide();
+            });
+        },
+
+        show: function(position){
+            var t = this;
+            //console.log("ContextMenu - ",  t);
+            if(position != null){
+                t.hularion.principal.css("left", position.left);
+                t.hularion.principal.css("top", position.top);
+            }
+            t.items.forEach((v, k, m) => {
+                if (v.show === false) {
+                    k.view.css("display", "none");
+                }
+                else {
+                    k.view.css("display", "block");
+                    k.handles.itemTitle.html(v.title);
+                }
+            });
+            t.hularion.principal.css("display", "block");
+        },
+
+        hide: function(){
+            this.hularion.principal.css("display", "none");
+        },
+
+        addItem: function(item){
+            //item: {
+            //    title: "",
+            //    enabled: true/false
+            //}
+            
+            var t = this;
+            var clone = t.hularion.createClone("menuItem");
+            t.items.set(clone, item);
+            clone.view.on("click", ()=>{
+                t.hide();
+                t.hularion.publisher.ItemSelected.publish(item);
+            });
+            clone.handles.itemTitle.html(item.title);
+            t.optionsContainer.append(clone.view);
+        }
+    }
+
+</script>
+
+
+<style>
+    .this {
+        user-select: none;
+        display: inline-block;
+        padding: 5px;
+        border-width: 2px;
+        border-style: solid;
+        display: none;
+        position: absolute;
+    }
+
+    .this * {
+        user-select: none;
+    }
+
+    .optionsContainer{
+
+    }
+    .menuItem {
+        padding-left:8px;
+        padding-right:8px;
+        padding-top:4px;
+        padding-bottom:4px;
+        cursor:pointer;
+    }
+    .menuItem * {
+        cursor: pointer;
+    }
+</style>
+
+<style h-style-category-key="Theme" h-style-category-value="Light">
+    .this {
+        background-color: white;
+        color: black;
+        border-color: lightgray;
+    }
+    .menuItem:hover {
+        background-color: rgb(147, 147, 147);
+    }
+</style>
+<style h-style-category-key="Theme" h-style-category-value="Dark">
+    .this {
+        background-color: black;
+        color: white;
+        border-color: darkgray;
+    }
+    .menuItem:hover {
+        background-color: rgb(147, 147, 147);
+    }
+</style>
+

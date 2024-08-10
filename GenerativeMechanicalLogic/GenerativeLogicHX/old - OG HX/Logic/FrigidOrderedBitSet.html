@@ -1,0 +1,44 @@
+﻿<div>
+
+    <script class="codeObject">
+
+        function FrigidOrderedBitSet() {
+            this.title = "Ordered Bit Set";
+            //this.bitSet = new OrderedSetDefinition()
+            this.name = "";
+            this.memberName = "";
+            this.expression = null;
+            this.length = 0;
+            this.series = new BitSeries("", 0, "", "", "");
+            this.orderedSet = null;
+        }
+
+        FrigidOrderedBitSet.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.orderedSet = $.h.app.presentation.logic.getFrigidOrderedSet();
+                t.principal.append(t.orderedSet.view);
+            },
+
+            Render: function () {
+                var t = this;
+                t.orderedSet.code.series = t.series;
+                t.orderedSet.code.Render();
+                
+
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidOrderedBitSet {
+            display:inline-block;
+            padding:10px;
+        }
+    </style>
+
+</div>

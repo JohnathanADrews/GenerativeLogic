@@ -1,0 +1,105 @@
+﻿<div>
+
+    <div class="orderedSetContainer"></div>
+    <div class="mainEquator"></div>
+    <div class="initialValueEquators"></div>
+    <div class="truthTable"></div>
+
+    <script class="codeObject">
+
+        function FrigidRecursiveFunction() {
+            this.title = "Recursive Function";
+            this.memberName = "";
+            this.expression = null;
+            this.length = 0;
+            this.expressionViewer = null;
+            this.functionName = null;
+            this.functionIndex = null;
+            this.initialValues = [];
+            this.initialValueContainer = null;
+            this.initialValueContainer = null;
+            this.truthTableContainer = null;
+
+            //public
+            this.orderedSet = $.h.app.presentation.logic.getFrigidOrderedSet();
+            this.mainEquator = $.h.app.presentation.logic.getFrigidExpressionEquator();
+            this.recursiveFunction = new RecursiveFunction();
+
+        }
+
+        FrigidRecursiveFunction.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.principal.find("> .orderedSetContainer").append(t.orderedSet.view);
+                t.principal.find("> .mainEquator").append(t.mainEquator.view);
+                t.initialValueContainer = t.principal.find("> .initialValueEquators");
+                t.truthTableContainer = t.principal.find("> .truthTableContainer");
+            },
+
+            SetName: function (name) {
+                this.name = name;
+            },
+
+            SetMemberName: function (name) {
+                this.memberName = name;
+            },
+
+            SetLength: function (length) {
+                this.length = length;
+            },
+
+            SetExpression: function (expression) {
+                this.expression = expression;
+            },
+
+            AddInitialValue: function (index, value) {
+                this.initialValues.push({ index: index, value: value });
+            },
+
+
+            //Parse: function (parseable) {
+            //    // examples
+            //    // "f[i] = a[i] XOR r[i]"
+            //    // "f[i, j] = a[i] XOR r[i-1, j]"
+            //    // "f[i] = a[i] XOR b[i] XOR r[i]"
+            //    // "r[i] = a[i-1] AND b[i-1] OR ( (a[i-1] XOR b[i-1]) AND r[i-1] ), i > 1, r[1] = 1"
+
+            //    var parts = parseable.split(",");
+            //    console.log("FrigidRecursiveFunction.Parse - ", parseable, " - ", parts);
+
+            //},
+
+            Render: function () {
+                var t = this;
+                //console.log("FrigidRecursiveFunction.Render - ", t.recursiveFunction);
+
+                t.orderedSet.code.series = t.recursiveFunction.series;
+                t.orderedSet.code.Render();
+                t.mainEquator.code.name = t.recursiveFunction.series.memberName;
+                t.mainEquator.code.subscript = t.recursiveFunction.series.indexName;
+                t.mainEquator.code.expression = t.recursiveFunction.expression;
+                t.mainEquator.code.conditions = t.recursiveFunction.conditions;
+                t.mainEquator.code.Render();
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidRecursiveFunction {
+            display: inline-block;
+            padding: 10px;
+        }
+
+        .FrigidRecursiveFunction > * {
+            float: left;
+            margin-right: 20px;
+            width:100%;
+        }
+
+    </style>
+
+</div>

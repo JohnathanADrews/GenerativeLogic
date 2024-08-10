@@ -1,0 +1,163 @@
+﻿<div>
+
+    <div class="rendered"></div>
+
+    <div class="templates">
+        <div class="operator"><label></label></div>
+        <div class="bitSeriesReader">
+            <div class="bitSeriesReaderVariable"><label></label></div>
+            <div class="bitSeriesReaderIndex"><label></label></div>
+        </div>
+        <div class="binaryVariable">
+            <div class="binaryVariableName"><label></label></div>
+            <div class="binaryVariableIndex"><label></label></div>
+        </div>
+        <div class="variableOperand"><label></label></div>
+        <div class="recursiveOperand"><label></label></div>
+        <div class="constant"><label></label></div>
+        <div class="leftExpressionClosure"><label>(</label></div>
+        <div class="rightExpressionClosure"><label>)</label></div>
+    </div>
+
+    <script class="codeObject">
+
+        function FrigidExpression() {
+            this.title = "Frigid Expression";
+            this.expression = null;
+            this.rendered = null;
+            this.leftClosureAppender = function () { };
+            this.rightClosureAppender = function () { };
+            this.nodeValueAppender = function () { };
+            this.result = "";
+            this.indexNameModeEnabled = true;
+        }
+
+        FrigidExpression.prototype = {
+
+            Start: function () {
+                var t = this;
+                t.rendered = t.principal.find(".rendered");
+                t.leftClosureAppender = () => { t.rendered.append(t.CreateTemplate("leftExpressionClosure")); };
+                t.rightClosureAppender = () => { t.rendered.append(t.CreateTemplate("rightExpressionClosure")); };
+                t.nodeValueAppender = node => {
+                    //console.log(" *************************** FrigidExpression.nodeValueAppender - ", node);
+                    var o = null;
+                    if (node.type === LogicalExpressionNode.Type.Operator) {
+                        o = t.CreateTemplate("operator");
+                        o.find("label").html(node.value.name);
+                        t.rendered.append(o);
+                    //    return;
+                    }
+                    if (node.type === LogicalExpressionNode.Type.OperandVariable) {
+                        o = t.CreateTemplate("variableOperand");
+                    //console.log("FrigidExpression.Start-LogicalExpressionNode.Type.OperandVariable  4t3rgvetrhte4rhbt- ", node);
+                        o.find("label").html(node.value.name);
+                        //o.find("label").html(node.type);
+                        t.rendered.append(o);
+                //        return;
+                    }
+                    if (node.type === LogicalExpressionNode.Type.Constant) {
+                        o = t.CreateTemplate("constant");
+                        o.find("label").html(node.value);
+                        t.rendered.append(o);
+                    }
+                    if (node.type === LogicalExpressionNode.Type.BitSeriesReader) {
+                //console.log("FrigidExpression.Start - ", node);
+                        o = t.CreateTemplate("bitSeriesReader");
+                        o.find(".bitSeriesReaderVariable label").html(node.value.series.memberName);
+                        o.find(".bitSeriesReaderIndex label").html((t.indexNameModeEnabled ? node.value.series.indexName : "") + (node.value.offset == 0 ? "" : node.value.offset));
+                        //o.find(".bitSeriesReaderVariable label").html(node.reader.series.memberName);
+                        //o.find(".bitSeriesReaderIndex label").html(node.reader.series.indexName + (node.reader.offset == 0 ? "" : node.reader.offset));
+                        t.rendered.append(o);
+                 //       return;
+                    }
+                  //  if (node.type === LogicalExpressionNode.Type.Variable) {
+                  //      o = t.CreateTemplate("binaryVariable");
+                  //      o.find(".binaryVariableName label").html(node.name);
+                  //      o.find(".binaryVariableIndex label").html(node.index);
+                  //      t.rendered.append(o);
+                  ////      return;
+                  //  }
+         //           if (node.name == "a" && node.index == 1) {
+         //                o.attr("style", "color:red;"); 
+         ////           console.log("FrigidExpression.Start 4.1 - ", node.negation, node);
+         //           }
+                    if (node.negation == 1) {
+                        o.attr("style", "color:red;");
+              //      console.log("FrigidExpression.Start 4.2 - ", node);
+                    }
+
+                };
+            },
+
+            Render: function () {
+                var t = this;
+                //console.log("FrigidExpression.Render expressionViewer.code - ", t.expression, t.expression.root.GetNodes());
+                //console.log(" @@@@@@@@@@@@@@@@@@@@@@@@ FrigidExpression.Render  - ", t.expression);
+
+                //var plan = TreeTraverser.CreateEvaluationPlan(TreeTraverser.PLROrder, t.expression.root, node => node.GetNodes(), true);
+                //if (plan.length == 1) {
+                //console.log("FrigidExpression.Render expressionViewer.code 123213214- ", t.expression.root.negation, t.expression);
+                //}
+                //console.log("FrigidExpression.Render expressionViewer.code 123213214- ", t.expression.root.negation, t.expression);
+                t.rendered.empty();
+                if (t.expression == null || t.expression.root == null) { return; }
+                TreeTraverser.RenderExpression(t.expression.root, node => node.GetNodes(),
+                    t.leftClosureAppender, t.nodeValueAppender, t.rightClosureAppender,
+                    { useLeafClosure: false, useOuterClosure: false });
+
+
+            },
+
+            EnableIndexNameMode(isEnabled) {
+                this.indexNameModeEnabled = isEnabled;
+            }
+
+        };
+
+    </script>
+
+
+    <style>
+        .FrigidExpression {
+            display: inline-block;
+            font-size: 20px;
+        }
+
+        .FrigidExpression > .rendered > *{
+            float:left;
+            margin-right:6px;
+            height:26px;
+            overflow:hidden;
+        }
+
+        .FrigidExpression .bitSeriesReaderIndex{
+            float:left;
+            margin-top:-16px;
+            margin-left:12px;
+            font-size:14px;
+            font-weight:300;
+        }
+
+        .FrigidExpression .binaryVariableIndex{
+            float:left;
+            margin-top:-16px;
+            margin-left:12px;
+            font-size:14px;
+            font-weight:300;
+        }
+
+        .FrigidExpression > .rendered > .operator{
+            color:#192794;
+        }
+
+        .FrigidExpression > .rendered > .leftExpressionClosure{
+            color:#569ca3;
+        }
+
+        .FrigidExpression  .rightExpressionClosure{
+            color:#569ca3;
+        }
+    </style>
+
+</div>
