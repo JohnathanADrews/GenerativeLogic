@@ -1,0 +1,502 @@
+﻿
+<div class="expressionLabelContainer"><label>Expression</label></div>
+
+<div class="expressionInputContainer" h-handle="expressionInputContainer">
+    <div class="expressionInputButton" h-handle="expressionInputAdd"><label>Add</label></div>
+    <div class="expressionInputButton hide" h-handle="expressionInputCancel"><label>Cancel</label></div>
+    <div class="expressionInputButton disabledButton" h-handle="expressionInputSave"><label>Save</label></div>
+    <input class="expressionInput" disabled="disabled" h-handle="expressionInput" />
+</div>
+
+<div class="enteredExpressionContainer">
+    <div>
+        <div class="expressionTableToggleHide" h-handle="expressionTableToggleHide"><label>Hide</label></div>
+        <div class="expressionTableToggleShow hide" h-handle="expressionTableToggleShow"><label>Show</label></div>
+        <div class="expressionTableSummary" h-handle="expressionTableSummary"><p h-handle="expressionTableSummaryContent"></p></div>
+    </div>
+
+    <hx h-presenter="Control/Table" h-handle="expression.table" />
+    <div class="expressionTableHeaderContainer" h-handle="expressionTableHeaderContainer"></div>
+    <div class="expressionTableContainer" h-handle="expressionTableContainer"></div>
+</div>
+
+<div class="templates">
+    <div class="expressionContainer"></div>
+    <div class="expressionTableIndexHeader"><label>&nbsp;</label></div>
+    <div class="expressionTableActiveHeader"><label>Active</label></div>
+    <div class="expressionTableDeleteHeader"><label>Delete</label></div>
+    <div class="expressionTableExpressionHeader"><label>Expression</label></div>
+
+    <div class="expressionTableIndexValue"><label>&nbsp;</label></div>
+    <div class="expressionTableActiveValue"><input type="checkbox" /></div>
+    <div class="expressionTableDeleteValue"><div><label>x</label></div></div>
+    <div class="expressionTableExpressionValue" h-handle="expressionTableExpressionValue"></div>
+</div>
+
+<label h-clone="rowIndex"></label>
+
+<script>
+
+    function ExpressionEditor() {
+
+        this.expressionTableHeader = null;
+        this.expressionTable = null;
+
+        this.enterExpressionContainer = null;
+        this.renderedExpression = null;
+
+        this.expressionIndexColumn = 0;
+        this.expressionActiveColumn = 1;
+        this.expressionDeleteColumn = 2;
+        this.expressionEquatorColumn = 3;
+
+        this.updater = () => { };
+    }
+
+    ExpressionEditor.prototype = {
+
+        start: function () {
+            var t = this;
+
+            console.log("ExpressionEditor.start", t, window);
+
+            //t.expressionTableToggleHide.on("click", function () {
+            //    t.expressionTableToggleShow.removeClass("hide");
+            //    t.expressionTableToggleHide.addClass("hide");
+            //    t.expressionTableContainer.addClass("hide");
+            //    t.expressionTableHeaderContainer.addClass("hide");
+            //});
+            //t.expressionTableToggleShow.on("click", function () {
+            //    t.expressionTableToggleHide.removeClass("hide");
+            //    t.expressionTableToggleShow.addClass("hide");
+            //    t.expressionTableContainer.removeClass("hide");
+            //    t.expressionTableHeaderContainer.removeClass("hide");
+            //});
+
+            //t.expressionTableHeader = $.h.app.presentation.shared.arctic.getArcticTable();
+            //t.expressionTableHeader.code.AppendColumns(4);
+            //t.expressionTableHeader.code.AppendRows(1);
+            //t.expressionTableHeader.code.SetColumnWidth(t.expressionActiveColumn, 70);
+            //t.expressionTableHeader.code.SetColumnWidth(t.expressionDeleteColumn, 70);
+            //t.expressionTableHeader.code.SetColumnWidth(t.expressionEquatorColumn, 730);
+            //t.expressionTableHeader.code.SetContent(t.expressionIndexColumn, 0, t.CreateTemplate("expressionTableIndexHeader"));
+            //t.expressionTableHeader.code.SetContent(t.expressionActiveColumn, 0, t.CreateTemplate("expressionTableActiveHeader"));
+            //t.expressionTableHeader.code.SetContent(t.expressionDeleteColumn, 0, t.CreateTemplate("expressionTableDeleteHeader"));
+            //t.expressionTableHeader.code.SetContent(t.expressionEquatorColumn, 0, t.CreateTemplate("expressionTableExpressionHeader"));
+            //t.expressionTableHeaderContainer.append(t.expressionTableHeader.view);
+
+            //t.expressionTable = $.h.app.presentation.shared.arctic.getArcticTable();
+            //t.expressionTable.code.AppendColumns(4);
+            //t.expressionTable.code.SetColumnWidth(t.expressionActiveColumn, 70);
+            //t.expressionTable.code.SetColumnWidth(t.expressionDeleteColumn, 70);
+            //t.expressionTable.code.SetColumnWidth(t.expressionEquatorColumn, 730);
+            //t.expressionTableContainer.append(t.expressionTable.view);
+
+            //t.renderedExpression = $.h.app.presentation.logic.getFrigidExpression();
+
+            t.expressionInputAdd.on("click", () => {
+                var equation = new generativeLogic.js.LogicalExpressionEquation();
+                equation.expression.root = generativeLogic.js.LogicalExpression.CreateOperandVariableNode("a");
+                var equations = t.GetEquations();
+                algorithm.control.processIterator(1, equations.length, i => {
+                    var found = false;
+                    equation.name = "f" + i;
+                    algorithm.control.processArray(equations, eq => { if (eq.name == equation.name) { found = true; return false; } });
+                    if (!found) { return false; }
+                });
+                var container = t.addEquation(equation);
+                container.data("selector")();
+            });
+
+            //var saver = () => {
+            //    console.log("FrigidExpressionManager.Start saver - ", t.expressionInput.data("presenter").code)
+            //    t.expressionInput.data("presenter").code.Parse(t.expressionInput.val());
+            //    t.expressionInputSave.addClass("disabledButton");
+            //    t.expressionInputAdd.removeClass("hide");
+            //    t.expressionInputCancel.addClass("hide");
+            //    t.expressionTableExpressionValue.removeClass("selectedExpression");
+            //    t.expressionInput.val("");
+            //    t.Update();
+            //    t.expressionInput.attr("disabled", "disabled");
+            //};
+            //t.expressionInputSave.on("click", () => {
+            //    if (t.expressionInput.attr("disabled") == "disabled") { return; }
+            //    //console.log("ewqgterge", t.expressionInput.val(), " - ", t.expressionInput.html())
+            //    saver();
+            //});
+            //t.expressionInput.on("keyup", e => {
+            //    if (e.key == "Enter") { saver(); }
+            //});
+
+            //t.expressionInputCancel.on("click", () => {
+            //    t.expressionInput.attr("disabled", "disabled");
+            //    t.expressionInputAdd.removeClass("hide");
+            //    t.expressionInputCancel.addClass("hide");
+            //    t.expressionInputSave.addClass("disabledButton");
+            //    t.expressionTableExpressionValue.removeClass("selectedExpression");
+            //    t.expressionInput.val("");
+            //});
+        },
+
+        addEquation: function (equation) {
+            var t = this;
+
+            //console.log("FrigidExpressionManager.AddEquator - ", equation.expression.root);
+
+
+            //var equationPresenter = $.h.app.presentation.logic.getFrigidExpressionEquator();
+            //equationPresenter.code.name = "x" + t.expressionTable.code.GetRowCount();
+            //equationPresenter.code.equation = equation;
+            //equationPresenter.code.render();
+
+            //var expressionContainer = t.CreateTemplate("expressionTableExpressionValue");
+            //expressionContainer.append(equationPresenter.view);
+            //expressionContainer.data("selector", () => {
+            //    t.expressionInput.val(equationPresenter.code.renderText());
+            //    t.expressionInput.attr("disabled", false);
+            //    t.expressionInput.data("presenter", equationPresenter);
+            //    t.expressionTableExpressionValue.removeClass("selectedExpression");
+            //    expressionContainer.addClass("selectedExpression");
+            //    t.expressionInputAdd.addClass("hide");
+            //    t.expressionInputCancel.removeClass("hide");
+            //    t.expressionInputSave.removeClass("disabledButton");
+            //    t.expressionInput.focus();
+            //});
+            //expressionContainer.on("click", () => { expressionContainer.data("selector")(); });
+
+
+            //var activeChecker = t.CreateTemplate("expressionTableActiveValue");
+            //var check = activeChecker.find("input:checkbox");
+            //check.prop("checked", true);
+            //check.change(() => { t.Update(); });
+
+            //var deleter = t.CreateTemplate("expressionTableDeleteValue");
+            //deleter.on("click", () => {
+            //    t.expressionTable.code.DeleteRowContaining(deleter);
+            //    t.Update();
+            //});
+
+
+            //var rowIndex = t.expressionTable.code.AppendRow();
+            //var rowIndexClone = t.hularion.createClone("rowIndex");
+            //rowIndexClone.dome.innerHTML = rowIndex
+            //deleter.append(rowIndexClone.dome);
+            //t.expressionTable.code.SetContent(t.expressionIndexColumn, rowIndex, t.CreateTemplate("expressionTableIndexValue"));
+            //t.expressionTable.code.SetContent(t.expressionActiveColumn, rowIndex, activeChecker);
+            //t.expressionTable.code.SetContent(t.expressionDeleteColumn, rowIndex, deleter);
+            //t.expressionTable.code.SetContent(t.expressionEquatorColumn, rowIndex, expressionContainer);
+
+            //t.update();
+            //return expressionContainer;
+        },
+
+        render: function () {
+            var t = this;
+            //t.update();
+        },
+
+        update: function () {
+            var t = this;
+
+            //var activeCount = 0;
+            //$.d.ProcessIterator(0, t.expressionTable.code.GetRowCount() - 1, i => {
+            //    var activeChecker = t.expressionTable.code.GetContent(t.expressionActiveColumn, i);
+            //    if (activeChecker.find("input").prop("checked")) { activeCount++; }
+            //    t.expressionTable.code.GetContent(t.expressionIndexColumn, i).find("> *").html(i + 1);
+            //});
+            //var summary = "" + activeCount + " of " + t.expressionTable.code.GetRowCount() + " expressions active.";
+
+
+            //summary += " Variables: { ";
+            //var variableNames = t.getVariableNames();
+            //$.d.ProcessIterator(0, variableNames.length - 1, i => {
+            //    if (i > 0) { summary += ", "; }
+            //    summary += variableNames[i];
+            //});
+            //summary += " }.";
+
+            //t.expressionTableSummaryContent.html(summary);
+            //t.updater();
+
+        },
+
+        GetEquations: function () {
+            var t = this;
+            var result = [];
+            //$.d.ProcessIterator(0, t.expressionTable.code.GetRowCount() - 1, i => {
+            //    var equator = t.expressionTable.code.GetContent(t.expressionEquatorColumn, i).find("> *").data("code");
+            //    //equator.equation.isActive = t.expressionTable.code.GetContent(t.expressionActiveColumn, i).find("input").prop("checked");
+            //    result.push({ equation: equator.equation, isActive: t.expressionTable.code.GetContent(t.expressionActiveColumn, i).find("input").prop("checked") });
+            //});
+            return result;
+        },
+
+        setUpdate: function (updater) {
+            var t = this;
+            //t.updater = () => { updater(); };
+        },
+
+        getVariableNames: function () {
+            var t = this;
+            //var equations = t.GetEquations();
+            //var variables = {};
+            //$.d.ProcessArray(equations, equationData => {
+            //    if (!equationData.isActive) { return; }
+            //    $.d.ProcessArray(equationData.equation.expression.GetNodesOfType(LogicalExpressionNode.Type.OperandVariable), node => {
+            //        //console.log("FrigidExpressionManager.Update w4y3gverbv- ", node.type, node);
+            //        variables[node.value.name] = node.value.name;
+            //    });
+            //});
+            //var variableNames = $.d.GetObjectMemberNames(variables);
+            //variableNames.sort();
+            ////console.log("FrigidExpressionManager.Update variableNames- ", variableNames);
+            //return variableNames;
+        }
+
+    };
+
+</script>
+
+
+<style>
+
+    .this {
+        background-color: rgba(255,255,255,.99);
+        display: inline-block;
+        width: 100%;
+    }
+
+    .expressionLabelContainer {
+        margin-left: 125px;
+        width: 100%;
+    }
+
+    .enteredExpressionContainer {
+        width: 100%;
+        display: inline-block;
+        margin-top: 2px;
+    }
+
+    .enteredExpressionContainer > * {
+        margin-left: 5px;
+    }
+
+    .enteredExpressionContainer * {
+        cursor: pointer;
+    }
+
+
+    .expressionTableHeaderContainer {
+        width: 100%;
+        padding: 10px;
+        padding-bottom: 0px;
+        display: inline-block;
+        max-height: 400px;
+        margin-top: 5px;
+    }
+
+    .expressionTableContainer {
+        width: calc(100% - 10px);
+        height: calc(100% - 130px);
+        padding: 10px;
+        padding-top: 0px;
+        display: inline-block;
+        max-height: 400px;
+        overflow-y: scroll;
+    }
+
+    .expressionTableToggleHide {
+        width: 50px;
+        height: 30px;
+        float: left;
+        border: solid 1px black;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        padding-top: 3px;
+    }
+
+    .expressionTableToggleHide * {
+        cursor: pointer;
+    }
+
+    .expressionTableToggleHide:hover {
+        background-color: yellow;
+    }
+
+    .expressionTableToggleShow {
+        width: 50px;
+        height: 30px;
+        float: left;
+        border: solid 1px black;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        padding-top: 3px;
+    }
+
+    .expressionTableToggleShow * {
+        cursor: pointer;
+    }
+
+    .expressionTableToggleShow:hover {
+        background-color: yellow;
+    }
+
+    .expressionTableSummary {
+        width: calc(100% - 60px);
+        float: left;
+        border-top: solid 1px gray;
+        border-bottom: solid 1px gray;
+        height: 30px;
+        margin-left: 5px;
+        padding-left: 10px;
+        padding-top: 4px;
+        overflow: hidden;
+    }
+
+    .expressionInputContainer {
+        /*margin-left:15px;*/
+        display: inline-block;
+        margin-bottom: 2px;
+        width: calc(100% - 10px);
+    }
+
+    .expressionInputContainer > * {
+        float: left;
+        margin-left: 5px;
+    }
+
+    .expressionInputContainer > input {
+        width: calc(100% - 140px);
+        border-left: none;
+        border-right: none;
+        padding-left: 10px;
+        margin-left: 10px;
+        float: left;
+        /*background-color:#b7dff3;*/
+    }
+       
+
+    .expressionInputButton {
+        width: 60px;
+        height: 30px;
+        float: left;
+        border: solid 1px black;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        padding-top: 3px;
+    }
+
+    .expressionInputButton:hover {
+        background-color: yellow;
+    }
+
+    .expressionInputButton > * {
+        cursor: pointer;
+    }
+
+
+    .renderedExpressionContainer {
+        width: 100%;
+    }
+
+    .expressionTableExpressionHeader {
+        padding-left: 8px;
+        width: 100%;
+        height: 100%;
+        border-bottom: solid 1px darkgray;
+    }
+
+    .expressionTableActiveHeader {
+        padding-left: 8px;
+        width: 100%;
+        height: 100%;
+        border-right: solid 1px gray;
+        border-bottom: solid 1px darkgray;
+    }
+
+    .expressionTableDeleteHeader {
+        padding-left: 8px;
+        width: 100%;
+        height: 100%;
+        border-right: solid 1px gray;
+        border-bottom: solid 1px darkgray;
+    }
+
+    .expressionTableIndexValue {
+        padding-top: 4px;
+    }
+
+    .expressionTableActiveValue {
+        padding-left: 20px;
+        width: 100%;
+        height: 100%;
+        border-right: solid 1px gray;
+        border-bottom: solid 1px darkgray;
+    }
+
+    .expressionTableActiveValue > input {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .expressionTableDeleteValue {
+        padding-left: 20px;
+        width: 100%;
+        height: 100%;
+        border-right: solid 1px gray;
+        border-bottom: solid 1px darkgray;
+        padding-top: 4px;
+    }
+
+    .expressionTableDeleteValue > div {
+        border: solid 1px gray;
+        border-radius: 4px;
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+        background-color: #f2afaf;
+        text-align: center;
+        padding-top: -1px;
+    }
+
+    .expressionTableDeleteValue > div:hover {
+        background-color: red;
+    }
+
+    .expressionTableDeleteValue > div * {
+        cursor: pointer;
+    }
+
+    .expressionTableExpressionValue {
+        padding-left: 10px;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        border-bottom: solid 1px darkgray;
+    }
+
+    .expressionTableExpressionValue:hover {
+        background-color: #b0ebba;
+    }
+
+    .selectedExpression {
+        /*background: linear-gradient(0deg, #b0ebba 0%, white 20%,  white 80%, #b0ebba 100%);*/
+        background: linear-gradient(180deg, #b0ebba 0%, #d1f5da 20%, #e2f1e6 30%, #e2f1e6 75%, white 85%, #57ae66 100%);
+        background-color: #57ae66;
+        /*background: linear-gradient(0deg, yellow 0%, white 20%,  white 80%, yellow 100%);*/
+    }
+
+    .disabledButton {
+        background: linear-gradient(180deg, #b1b4b3 0%, #b1b4b3 100%);
+        cursor: initial;
+    }
+
+    .disabledButton > * {
+        cursor: initial;
+    }
+</style>
+

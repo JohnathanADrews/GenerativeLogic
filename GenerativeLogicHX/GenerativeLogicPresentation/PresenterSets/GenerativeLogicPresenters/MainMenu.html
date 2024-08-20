@@ -1,0 +1,160 @@
+﻿
+
+
+<hx h-publisher="ItemSelected" />
+
+
+<h1 style="color:wheat"></h1>
+
+
+<div h-handle="selections" class="selections">
+
+
+</div>
+
+<div h-clone="selection" class="selection">
+    <label h-handle="name" class="selectionName" />
+</div>
+
+<div style="display:none;">
+    <hx h-presenter="GenerativeLogicCore.Logic/IndexedItem" style="background-color: white;" h-handle="indexedItem" class="breakOnClass" />
+
+
+    <!--<hx h-presenter="GenerativeLogicCore.Logic/BitSelector" h-handle="bitSelector" />
+    <hx h-presenter="GenerativeLogicCore.Logic/TruthTable" h-handle="truthTable" />-->
+    <hx h-presenter="GenerativeLogicCore.Control/Grid" h-handle="grid" style="border:solid 1px green;margin:10px;" class="abc" />
+    <hx h-presenter="GenerativeLogicCore.Logic/BitSelector" h-handle="bits" style="border:solid 1px green;margin:10px; background-color:white;" />
+
+    <div h-clone="cellContent" class="gridItem"><label h-handle="content"></label></div>
+
+    <div h-handle="grids" class="grids"></div>
+
+</div>
+
+
+<script>
+
+    function MainMenu() {
+    }
+
+    MainMenu.prototype = {
+
+        start: function () {
+            var t = this;
+
+            //console.clear();
+
+            console.log("MainMenu.start - ", t, window);
+            console.log("MainMenu.start - generativeLogic - ", generativeLogic);
+
+            var createSelection = (name, presenter) => {
+                var clone = t.hularion.createClone("selection");
+                clone.handles.name.innerHTML = name;
+                t.selections.append(clone.view);
+                clone.dome.addEventListener("click", () => {
+                    t.hularion.publisher.ItemSelected.publish({ name: name, presenter: presenter });
+                });
+            };
+
+            createSelection("Bit Selector", generativeLogic.logic.presenters.BitSelector.create());
+            createSelection("Truth Table", generativeLogic.logic.presenters.TruthTable.create());
+            createSelection("Factor Map", generativeLogic.logic.presenters.FactorMap.create());
+            createSelection("Expression", generativeLogic.logic.presenters.ExpressionEditor.create());
+            createSelection("Recursive Function", generativeLogic.logic.presenters.RecursiveFunction.create());
+            createSelection("Recursion System", generativeLogic.logic.presenters.RecursionSystem.create());
+            createSelection("Incrementor", generativeLogic.logic.presenters.Incrementor.create());
+            createSelection("Adder", generativeLogic.logic.presenters.Adder.create());
+
+            //t.bitSelector.publisher.ValueChanged.subscribe((o, e) => {
+            //    console.log("GenerativeLogicEntry.start - bitSelector ValueChanged ", o, e);
+            //});
+
+
+            //t.truthTable.proxy.setVariables(["a", "b", "c"]);
+
+            //t.truthTable.proxy.update();
+
+
+            var grid1 = t.createGrid(5, 5);
+            console.log("GenerativeLogicEntry.start - grid ", grid1);
+
+            t.grids.append(grid1.dome);
+
+            grid2 = t.createGrid(2, 7);
+            t.grids.append(grid2.dome);
+
+        },
+
+        createGrid: function (columns, rows) {
+            var t = this;
+
+
+            var grid = generativeLogic.control.presenters.Grid.create();
+
+            grid.proxy.insertColumns(0, columns);
+            grid.proxy.insertRows(0, rows);
+
+            grid.proxy.setBaseColumnWidth(50);
+
+            algorithm.control.processIterator(0, columns - 1, i => {
+                algorithm.control.processIterator(0, rows - 1, j => {
+                    var clone = t.hularion.createClone("cellContent");
+                    clone.handles.content.innerHTML = "(" + i + ", " + j + ")";
+                    grid.proxy.setContent(i, j, clone.dome);
+                });
+            });
+
+            return grid;
+        }
+    }
+
+</script>
+
+<style>
+
+    .this {
+        background-color: black;
+        height: 100vh;
+        user-select:none;
+    }
+
+    .selections{
+
+        background-color:lightblue;
+        padding:10px;
+
+    }
+
+    .selection {
+        width: calc(100% - 10px);
+        margin-bottom: 10px;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .selection *{
+        cursor:pointer;
+    }
+
+    .selection:hover{
+        background-color:lightgoldenrodyellow;
+    }
+
+
+        .gridItem {
+            width: calc(100% - 2px);
+            height: calc(100% - 2px);
+            border: solid 1px blue;
+            color: white;
+            text-align: center;
+        }
+
+    .grids {
+        padding: 10px;
+        border: solid 2px red;
+    }
+
+        .grids > * {
+            margin: 10px;
+        }
+</style>

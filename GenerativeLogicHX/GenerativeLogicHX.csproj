@@ -64,6 +64,7 @@
     <None Remove="GenerativeLogicPresentation\Configuration\GenerativeLogicPresenters.html" />
     <None Remove="GenerativeLogicPresentation\GenerativeLogicPresentation.hxproject" />
     <None Remove="GenerativeLogicPresentation\PresenterSets\GenerativeLogicPresenters\GenerativeLogicEntry.html" />
+    <None Remove="GenerativeLogicPresentation\PresenterSets\GenerativeLogicPresenters\MainMenu.html" />
     <None Remove="_Templates\Template.html" />
   </ItemGroup>
 
@@ -101,6 +102,7 @@
     <EmbeddedResource Include="GenerativeLogicPresentation\Applications\GenerativeLogic.html" />
     <EmbeddedResource Include="GenerativeLogicPresentation\Configuration\GenerativeLogicPresenters.html" />
     <EmbeddedResource Include="GenerativeLogicPresentation\GenerativeLogicPresentation.hxproject" />
+    <EmbeddedResource Include="GenerativeLogicPresentation\PresenterSets\GenerativeLogicPresenters\MainMenu.html" />
     <EmbeddedResource Include="GenerativeLogicPresentation\PresenterSets\GenerativeLogicPresenters\GenerativeLogicEntry.html" />
     <EmbeddedResource Include="_Templates\Template.html" />
   </ItemGroup>

@@ -1,0 +1,15 @@
+﻿
+
+<hx h-presenter-configuration="GenerativeLogicCore-GenerativeLogicCoreLogic-Config" h-presenter-set="Logic">
+
+    <hx h-import-presenter="this" h-import-set="Control" h-frame="Control"></hx>
+    <hx h-presenter-frame="Control" h-attach="frame" h-handle="generativeLogic.control"></hx>
+
+    <hx h-import-script="this" h-import-set="Algorithm" h-frame="fAlgorithm"></hx>
+    <hx h-script-frame="fAlgorithm" h-attach="frame" h-handle="algorithm" h-assign="new API();"></hx>
+
+    <hx h-import-script="this" h-import-set="GenerativeLogicScript" h-frame="fGenerativeLogicScript"></hx>
+    <hx h-script-frame="fGenerativeLogicScript" h-attach="frame" h-handle="generativeLogic.js" h-assign="new GenerativeLogicJS();"></hx>
+
+
+</hx>

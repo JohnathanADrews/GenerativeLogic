@@ -1,0 +1,49 @@
+﻿
+
+<hx h-presenter="GenerativeLogicCore.Control/ViewNavigationPath" h-handle="nav.path" />
+<hx h-presenter="GenerativeLogicCore.Control/ViewNavigationArray" h-handle="nav.array" />
+
+
+<hx h-presenter="MainMenu" h-handle="menu" h-subscribe="ItemSelected=>menuItemSelected" />
+
+
+<script>
+
+    function GenerativeLogicEntry() {
+    }
+
+    GenerativeLogicEntry.prototype = {
+
+        start: function () {
+            var t = this;
+            console.log("GenerativeLogicEntry.start", t, window);
+
+            t.nav.stack = generativeLogic.js.control.createViewNavigationStack();
+
+            t.nav.stack.setNavigationPath(t.nav.path);
+            t.nav.stack.setNavigationArray(t.nav.array);
+            t.nav.stack.addView("Home", t.menu.dome);
+
+        },
+
+        menuItemSelected: function (o, e) {
+            var t = this;
+
+            //console.log("GenerativeLogicEntry.menuItemSelected", t, o, e);
+
+            t.nav.stack.addView(e.name, e.presenter.dome);
+
+        }
+    }
+
+</script>
+
+<style>
+
+    .this {
+        background-color: white;
+        height: 100vh;
+        user-select: none;
+    }
+
+</style>
