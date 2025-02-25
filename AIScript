@@ -1,0 +1,165 @@
+
+Hello genius mechanical hero!
+
+Please consider the following concept. At any point, feel free to generate output indication an error, something that doesnt make sense, or something you would like more information on.
+
+Generative Mechanical Logic (GML) is a purely mechanical logical system that is meant to build mathematics from scratch using bits, binary operators, and other stuctures such as recursive functions and recursion systems. The goal is to solve problems in a new way while figuring out what logic is mechanically generable, and then pondering at what is left.
+
+Topic: Recursion Systems
+
+|x| indicates that x is a subscript.
+\y\ indicates that y is a superscript.
+
+All sets are assumed to have length k with an strting index of 1. The name of each set is a capitalized letter, and the members of each set is the lower case form with a subscript index. A bit set (BS) is a set of bits, which could be literal or symbolic based on context. A Function Set (FS) refers to a set of functions denoted by a capital letter. A function typically refers to a member of a Function Set.
+
+1. Incrementor
+
+	A is a BS.
+	F is FS defined as f|i| = a|i| XOR r|i|	
+	R is FS defined as r|i| = a|i-1| AND r|i-1| when i > 1 and r|1| = 1.
+	
+2. Adder
+
+	A and B are both BS.
+	F is FS defined as f|i| = (a|i| XOR b|i|) XOR r|i|
+	R is FS defined as (a|i-1| AND b|i-1|) OR ((a|i-1| XOR b|i-1|) AND r|i-1|) when i > 1 and r|1| = 0.
+
+
+In both recursion systems, F is the Lead FS since it produces the result of interest. R is an Intermediate FS, since it handles intermediate steps, which is essentially a carry function. Both F and R are Recursive Functions. Recursion Systems can have many Recursive Functions, and many could be interesting Lead Functions.
+
+Given a natural number X, X could be translated to a BS, say A, and fed to Incrementor. F could then be computed and tranlated to a result, Xr. Similarly, the Adder should be a proxy for addition of Natural Numbers. Just take care to note the overflow conditions.
+
+If this makes sense, please display these recursion systems with nice formatting including subscripts.
+
+Go ahead and use the Incrementor and Adder in a few tests to make sure they work as expected.
+
+
+Topic: Repetition Generator
+
+In order to generate new logic, we need an algorithm to take one Recursion System, such as the Incrementor, and use it to automatically generate another Recursion System, such as the Adder. Then, the Adder could generate the Multiplier, and the Multiplier could generate the Power function. After that, we need to pick the input we are holding constant and the input we are repeating on. This will become clear as I explain below.
+
+To generate a new Recursion System (RS) from an existing on, we can use the Repetition Generator (RG). The RG takes the input RS and groups applications of the original RS into groups that are powers of 2. Then, it integrates a counter, N, by using the choice function to select which powers of 2 should be applied, and it aggregates it in an aggregator function, called Q. Here is the breakdown:
+
+
+Step 1: Grouping Repetitions
+
+Suppose we start with the Incrementor. We can apply it to an input A 0 times, 1 time, 2 times, 4 times, 8 times, etcetera, and I can select any number of groups to indicate any number of applications I want.
+
+Let's assume F is the Incrementor, and F\j\ is the number of times F is applied. That is, F is computed, and then that result is the input to the next application. So, F\3\ means F is applied 3 times.
+
+So, let G\0\ = A, G\1\ = F\1\, G\2\ = F\2\, G\3\ = F\4\, G\4\ = F\8\, and so on. If this makes sense, please give a few lines of G with some nice superscript formatting.
+  
+Step 2: Simplifying the G Functions.
+It's useful to group the Fs into Gs, but, its not that helpful if we are going through the same number of steps. I'm sure you can reason through the process. Here are the G FSs. Please compare them to what you have.
+
+G\j\ such that 
+	g\j\|i| = a|i-j| XOR r|i-j| when j > i, and g\j\|k| = a|i| otherwise.
+	r|i| = a|i-j-1| AND r|i-j-1| when i > and r|i| = 1 otherwise. 
+	
+Please write out the first 5 G functions and test them to make sure they produce the correct result.
+
+Step 3: Integrate the Repetition Counter
+
+N is a BS that is our repetition counter. N will select which G functions to apply, and these applications will be captured in the aggregate FS, Q. Q will be composed of multiple Q\j\, each of which selects for either G\j\ to be applied or to go to the next Q\j-1\ instead. This will use the Choice function to accomplish this.
+
+For Q\j\|i|, q\j\|i| = (g/j/|i|(Q\j-1\|i|) AND N|i|) OR (q\j\|i| AND (NOT N|i|))
+
+Consider that an individual function in a function set can take the entire input as a parameter, which is how we have g/j/|i|(Q\j-1\|i|).
+
+Please discuss your thoughts and try a few examples to ensure that Q, rather than incrermenting, performs and addition process instead, which is the desired result.
+
+Step 4: Q Reduction
+
+Given what we discussed so far, reducing Q in the same way we reduced G is not exactly a mechanical step, but we can still sus it out and see that it is equivalent to the Adder. Go ahead and see if you can reason out the transformation. Once I introduce Function Factoring, we can combine this with Induction to mechanically generate the result.
+
+
+Topic: Symbols and Operators
+
+In GML, we are using a binary system with 0 and 1, and the operators that go along with it such as AND, OR, and XOR, but what about the other operators? If I have a system with n symbols, I should have n^(n^2) binary operators and n^n unary operators. For systems having more than two symbols, this quickly becomes unwieldly. Please consider a few like base 8 or base 10. However, even with only two symbols, we still have 4 unary operators and 16 binary operators. Generally, only a few are used, such as NOT, AND, OR, and XOR, depending on the application. NAND, NOR, and XNOR are also used in some cases. In GML, we will describe all 4 unary operators and all 16 binary operators for completeness.
+
+Consider a truth table. Generally, the columns will have a Standard Order to them. For example, a truth table with two variable will have rows { 00, 01, 10, 11 }. This will be the ordering we will use. The order of the variables is important too. If the variables are a and b, is a first, or is b first? this is important. Then, we have the output: for AND, it is 0001, and for OR it is 0111. Together, the variable ordering and the function definition is the Function Signature (or just signature or sig). In our example, AND would have a sig of {{a,b}, 0111}. Does that make sense?
+
+Now that we have an easy way to identify functions, and therefore operators, let's name all of the operators. Some are names I just made up since I could not find a name or the name had to to with a "truthy" logical concept instead of a purely mechanical one.
+
+Unary Operators
+UZ "Unary Zero" {{a}, 00}
+UEA "Unary Exactly A" {{a}, 01}
+NOT "Unary Inverse A" {{a}, 10}
+UO "Unary One" {{a}, 11}
+
+Binary Operators
+BLOCK "Binary Always Zero" {{a,b}, 0000}
+AND "Standard AND" {{a,b}, 0001}
+ANB "A AND (NOT B)" {{a,b}, 0010}
+EA "Exactly A" {{a,b}, 0011}
+NAB "(NOT A) AND B" {{a,b}, 0100}
+EB "Exactly B" {{a,b}, 0101}
+XOR "Standard XOR" {{a,b}, 0110}
+OR "Standard OR" {{a,b}, 0111}
+NOR "Standard NOR" {{a,b}, 1000}
+XNOR "Standard XNOR" {{a,b}, 1001}
+NB "NOT B" {{a,b}, 1010}
+AORNB "A OR (NOT B)" {{a,b}, 1011}
+NA "NOT A" {{a,b}, 1100}
+NAORB "(NOT A) OR B" {{a,b}, 1101}
+NAND "Standard NAND" {{a,b}, 1110}
+PASS "Binary Always One" {{a,b}, 1111}
+
+In GML, a symbolic bit is usually referred to as a an operand. An operand could be a literal bit, or it could be a variable bit. It could even be a Bit Proxy: imagine something like an interface in a programming language such as BinaryValueProvider (or IBinaryValueProvider in some styles).
+
+Topic: Expressions
+
+Part One - Setup
+
+In GML, an Expression is a tree of nodes that are either operators or operands. Every leaf node is a operand, and operands are only leaf nodes. All other nodes are operators. So, expressions have three aspects: operands, operators, and Form. The Form is essentially the placement of parentheses when the exprression is rendered to text. Form matters, since, among other reasons, not all operators are commutative, and other properties, such as the associative property, are difficult to work out at every glance. For this reason, order of operations is defined explicitly by the Form (i.e. parentheses placement) unless otherwise stated. Common shorthand is acceptable in a non-formal document for brevity.
+
+One caveat to the operators, is that an operator is not necessarily a static binary or unary operator. It too could be a variable operator, or it could be an interface provider similar to the operand.
+
+Topic: Functions
+
+In GML, a Function is defined by the function signature as was discussed with the operators. However, a function signature can have any number of variables, and the output, given Standard Order, will have a size 2^(number of variables). For example, if the function h = {{a,b,c}, 01101110}.
+
+
+Topic: Function Factoring
+
+In GML, we often generate unwieldly expressions. Consider the Q aggregator if all the expressions were fully rendered - it would be a real mess. To solve this problem in a way that allows us to evaluate a simple expression, first, we capture the expression as a function by generating the truth table. Then, we factor the function, attempting to generate an expression from the function. To do this, we use a the following: F(S) = G(S1) tau H(S2), where S, S1, and S2 are sets of binary variables, and S1 and S2 are both subsets of S. tau is an operator we are trying to factor on. Since we have 16 binary operators, we can simply spin through them to figure out which operators enable us to factor. Depending on S1, S2, and tau, F may or may not be factorable. If F is factorable, we can use the selected tau to build the expression.
+
+Please find an example of a 3 variable expression that is factorable on XOR and one example of an expression that is not.
+
+Part 2 - Logic Generation Technique
+
+To factor an expression, we can use a Factor Map. A factor map enables us to visually describe a solution finding process. Of course, it can also be done in a non-visual way. We could use a Factor Map to factor an arbitrary function and tau combination, but we really only need the Factor Map to capture a simpler pattern that can be applied more easily. 
+
+To exmplain this, we will start with the example F = {{a,b,c,d}, [0111 1110 0111 0010]} (I have spaced blocks for human eyes). If I created a truth table and wanted to factor this into G({a,b}) and H({c,d}), I could put placeholder values g|i| and h|j|. Please print the truth table for verification.
+
+
+Now, suppose you have F({a,b,c,d}) and you want to factor this into G({a,b}) tau H({c,d}), where tau is some binary operator. How would you do this, and what does it even mean? Well, look at the following truth table.
+
+Now, suppose you created a new table, a Factor Map. On the vertical, you have the g variable {a,b} possibilities, and on the horizontal you have the h variable {c,d} possibilities. In each table cell, you have in each corner, starting in the upper left and going clockwise, variables x1, x2, x3,and x4. x1 has the property of top and left, x2 is top and right, x3 is bottom and right, x4 is bottom and left.
+
+For the x values, you have the following 
+x1 => g|i| = 0 AND h|j| = 0
+x2 => g|i| = 0 AND h|j| = 1
+x3 => g|i| = 1 AND h|j| = 0
+x4 => g|i| = 1 AND h|j| = 1
+
+In the center, you have a value for F, which is the f|r| value in the truth table according to the row.
+
+Next, we select tau. Let's go with XOR in this case. With this, we can compute the theoretical x values and pop them in the table.
+
+Finally, we search for a solution. In the top-left cell, we find a 1 value. Then we we go across, looking for 1 values with the same top/bottom alignment. If we do not find one in a a cell going across, then there is no solution. If there is, then we keep going. Similarly, as we go down cells, we need a 1 with the same left/right alignment. As we develop the solution, we need to continue the process until each cell has exactly one x value accepted. If the process has zero, two, three, or four accepted x values, then it is not a valid solution. As you can imagine, for some operators, the number of possible solutions can quickly get out of hand. The notation for a selected x value is g|i|/h|j|/x|k|.
+
+So, what do you think? Is  F = {{a,b,c,d}, [0111 1110 0111 0010]} factorable on XOR? How about F = {{a,b,c,d}, [0100 1011 1011 0100]}?
+
+
+As you can see, factoring a function can be expensive. We would rather capture the pattern and then apply it without the Factor Map. To do this, we can use the G variables as a block. Imagine the truth table where the G values are all on the left; they do not change until all the H variable combinations are exhausted. We will call this set or rows a Factor Block. We can then discern a pattern for each operator on a Factor Block. For example, XOR's pattern is that each block must have the same outputs repeated in each block, or the opposite must be in the block. For example, 1101 1101 1011 1101 is factorable on XOR, but 1101 1001 1011 1101 is not factorable due to the secon block. BLOCK and PASS operators are obvious. Also, there is symmetry, and XNOR is the same as XNOR.
+
+If no factors can be found, another technique is Bit Entanglement. This is a technique where you replace an operand with an expression involving two or more operands. For example, F1 = a XOR b can become F2 = a XOR (t1 AND t2), where b is entangled with t1 and t2. Then, you can apply the factor to F2 instead of F1, and then potentially undo the entanglement if necessary, but it's not always necessary. You can even entangle multple operands. For example F1 = a XOR b can become F2 = (t1 OR t3) XOR (t1 AND t2).
+
+
+
+
+
+
+
+
