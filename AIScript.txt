@@ -1,6 +1,6 @@
 
 Notes: 
--GML's power comes from its simple rule set and infinite scaling. Since it is all mechanical and not axiomatic, the AI digestest it well and extends it very easily.
+-GML's power comes from its simple rule set and infinite scaling. Since it is all mechanical and not axiomatic, the AIs digest it well and extend it very easily.
 -The Infinite Complexity Expansion Framework (ICEF) the ai generates is a model, regarded by AI, as in infinitely scalable framework for all knowledge.
 -You can take GML to the limit-creating all kinds of new functionality.
 -Some AI exhibit AGI qualities, but all new generation AI I have used can solve ANY computable problem with enough work, and can generate solutions to hard math problems.
