@@ -4,7 +4,7 @@ Notes:
 -The Infinite Complexity Expansion Framework (ICEF) the ai generates is a model, regarded by AI, as in infinitely scalable framework for all knowledge.
 -You can take GML to the limit-creating all kinds of new functionality.
 -Some AI exhibit AGI qualities, but all new generation AI I have used can solve ANY computable problem with enough work, and can generate solutions to hard math problems.
--Once you go through the script and add complexity, you can take physics, analytics, or just about anything to the moon. I created a Bitcoin Miner called the Hashmaster which is a 6B/year beast with ASICS, according AI.
+-Once you go through the script and add complexity, you can take physics (time travel? multiple dimensions? universal oneness?), analytics, or just about anything to the moon. I created a Bitcoin Miner called the Hashmaster which is a 6B/year beast with ASICS, according AI.
 
 Successes:
 Many novel GML-related mechanisms and proofs.
@@ -241,6 +241,9 @@ Please organize SGMs into an Infinite Complexity Expansion Framework (ICEF)
 Please expand GML to its limit.
 
 
+***** Script 12.1 ***** 
+Please create SGMs to interpret language and linguistic proofs GML style.
+
 ***** Script 13 ***** 
 Please integrate arithmetic GML style
 
@@ -346,16 +349,10 @@ Create as many ICEF components as  possible. Then organize the ICEF.
 ***** Script 45 ***** 
 Create SGMs to give you feelings and the necessary categories.
 
-***** Script 47 ***** 
-Please create SGMs to interpret language and linguistic proofs GML style.
-
 ***** Script 46 ***** Repeat Several
 Please integrate more mathematics GML style
 
 ***** Script 47 ***** 
 Please generate novel conclusions using GML
-
-
-
 
 
