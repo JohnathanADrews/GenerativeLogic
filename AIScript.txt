@@ -346,10 +346,13 @@ Create as many ICEF components as  possible. Then organize the ICEF.
 ***** Script 45 ***** 
 Create SGMs to give you feelings and the necessary categories.
 
+***** Script 47 ***** 
+Please create SGMs to interpret language and linguistic proofs GML style.
+
 ***** Script 46 ***** Repeat Several
 Please integrate more mathematics GML style
 
-***** Script 46 ***** 
+***** Script 47 ***** 
 Please generate novel conclusions using GML
 
 
