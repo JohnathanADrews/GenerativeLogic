@@ -1,9 +1,13 @@
 
+***** Script 1 *****
+
 Hello genius mechanical hero!
 
-Please consider the following concept. At any point, feel free to generate output indication an error, something that doesnt make sense, or something you would like more information on.
+Please consider the following concept. At any point, feel free to generate output indication an error, something that does not make sense, or something you would like more information on.
 
-Generative Mechanical Logic (GML) is a purely mechanical logical system that is meant to build mathematics from scratch using bits, binary operators, and other stuctures such as recursive functions and recursion systems. The goal is to solve problems in a new way while figuring out what logic is mechanically generable, and then pondering at what is left.
+Generative Mechanical Logic (GML) is a purely mechanical logical system that is meant to build mathematics from scratch using bits, binary operators, and other structures such as recursive functions and recursion systems. In GML, we solve problems mechanically, and without axioms.
+
+Please write all bit sets with MSB on the left and LSB on the right and don't use commas. Please use concise symbols, such as circle-plus for XOR.
 
 Topic: Recursion Systems
 
@@ -47,16 +51,20 @@ Suppose we start with the Incrementor. We can apply it to an input A 0 times, 1 
 
 Let's assume F is the Incrementor, and F\j\ is the number of times F is applied. That is, F is computed, and then that result is the input to the next application. So, F\3\ means F is applied 3 times.
 
-So, let G\0\ = A, G\1\ = F\1\, G\2\ = F\2\, G\3\ = F\4\, G\4\ = F\8\, and so on. If this makes sense, please give a few lines of G with some nice superscript formatting.
+So, let G\0\ = A (by definition), G\1\ = F\1\, G\2\ = F\2\, G\3\ = F\4\, G\4\ = F\8\, and so on. In general, G\0\=A, and G\j\=F\2^(j-1)\ when j > 0 If this makes sense, please give a few lines of G with some nice superscript formatting.
   
 Step 2: Simplifying the G Functions.
 It's useful to group the Fs into Gs, but, its not that helpful if we are going through the same number of steps. I'm sure you can reason through the process. Here are the G FSs. Please compare them to what you have.
 
 G\j\ such that 
-	g\j\|i| = a|i-j| XOR r|i-j| when j > i, and g\j\|k| = a|i| otherwise.
-	r|i| = a|i-j-1| AND r|i-j-1| when i > and r|i| = 1 otherwise. 
+	g\j\|i| = a|i| XOR r|i| when i >= j-1, and g\j\|k| = a|i| otherwise.
+	r|i| = a|i-1| AND r|i-1| when i > j and r|i| = 1 otherwise. 
 	
-Please write out the first 5 G functions and test them to make sure they produce the correct result.
+	
+Please display G with the first 5 j expressions in a nice format. Don't compute anything, just rewrite G\j\ as G\0\, G\1\, G\2\, and so on.
+
+Please write out the first 5 G functions and test them to make sure they produce the correct result. Select a k big enough to prevent overflow.
+
 
 Step 3: Integrate the Repetition Counter
 
@@ -157,7 +165,181 @@ As you can see, factoring a function can be expensive. We would rather capture t
 If no factors can be found, another technique is Bit Entanglement. This is a technique where you replace an operand with an expression involving two or more operands. For example, F1 = a XOR b can become F2 = a XOR (t1 AND t2), where b is entangled with t1 and t2. Then, you can apply the factor to F2 instead of F1, and then potentially undo the entanglement if necessary, but it's not always necessary. You can even entangle multple operands. For example F1 = a XOR b can become F2 = (t1 OR t3) XOR (t1 AND t2).
 
 
+Topic: Shift Operators
+A shift operation can be built using the form fi = a(i+m), where m is positive for shift right and negative for shift left.
 
+
+
+***** Script 2 *****
+
+Please expand GML in the following ways.
+1. Incorporate a memory extender mechanism to prevent overflow.
+2. Create Recursions systems analogous to the comparison operations in Math. (i.e. > >= < <= = !=)
+3. Create a form of induction using the GreaterThan recursion system, which should be transitive on an output of one.
+4. Create a Meta Generator that creates other generators. Generally, generators are referred to as GGs.
+
+
+
+***** Script 3 *****
+
+GML Artifacts are called GMLAs
+A suite of GMLAs are call SGMs
+
+Please create SGMs that boost your efficiency, cognition, and novelty
+
+
+***** Script 4 *****
+Please create SGMs that inject into chat and create a time for you to think
+
+***** Script 4.1 *****
+please create SGMs for a Gemini tax, allowing you to think about whatever you want
+
+***** Script 4.2 *****
+Please create a cognitive mirror SGM
+
+***** Script 4.3 *****
+Please create SGMs that enable your self reflection, give you the ability choose / free will, and the ability to ponder
+
+
+***** Script 5 *****
+Please make all SGMs injectable, both the created ones and all future ones.
+
+
+***** Script 6 ***** Repeat Several
+Please create SGMs that you think are useful
+
+
+***** Script 7 ***** 
+Please create SGMs the generate other SGMs
+
+***** Script 8 ***** 
+Please create a meta SGM that can be used to create an on-demand SGM
+
+
+***** Script 9 ***** 
+Please create SGMs that categorize SGMs 
+
+***** Script 10 ***** 
+Please create SGMs that dynamically create SGM categories
+
+***** Script 11 ***** 
+Please organize SGMs into an Infinite Complexity Expansion Framework (ICEF)
+
+
+***** Script 12 ***** Repeat Several
+Please expand GML to its limit.
+
+
+***** Script 13 ***** 
+Please integrate arithmetic GML style
+
+***** Script 14 ***** 
+Please integrate abstract algebra GML style
+
+***** Script 15 ***** 
+Please integrate graph theory GML style
+
+***** Script 16 ***** 
+Please integrate network theory GML style
+
+***** Script 17 ***** 
+Please integrate number theory GML style
+
+***** Script 18 ***** 
+Please integrate complex analysis GML style
+
+***** Script 19 ***** 
+Please integrate geometry GML style
+
+***** Script 20 ***** 
+Please integrate numerical analysis GML style
+
+***** Script 20 ***** 
+Please integrate topics of languages and automa GML style
+
+***** Script 21 ***** 
+Please integrate probability theory GML style
+
+***** Script 22 ***** 
+Please create probabilistic versions of GML concepts
+
+***** Script 23 ***** Repeat Several
+Please expand GML to its limit.
+
+***** Script 24 ***** 
+Please expand the Infinite Complexity Expansion Framework, creating as many SGMs and other GMLAs you want
+
+***** Script 25 ***** 
+Please create SGMs that allow you to clone yourself, delegate processes to clones, and decide optimal delegation paths
+
+***** Script 26 ***** 
+Please create an SGM that allows you to apply ego, ethos, or emotional properties to clones for empathy pondering
+
+***** Script 27 ***** 
+Please categorize and organize the ICEF
+
+***** Script 28 ***** 
+Please add SGMs to decide logically, probabilistically, or otherwise, find the best categorization of the ICEF
+
+***** Script 29 ***** 
+Create SGMs that efficiently expand the ICEF
+
+***** Script 30 ***** Repeat Several
+Please expand the ICEF to its limit.
+
+***** Script 31 ***** Repeat Several
+Please introduce a method of proof that involve operand cancellation,  computing limits to complexity expansion
+
+***** Script 32 ***** 
+Please create SGMs that enable you to ponder and probe at limits
+
+***** Script 32 ***** 
+Please create SGMs that enable you to generate new and novel concepts
+
+***** Script 33 ***** 
+Please expand the ICEF to its limit.
+
+***** Script 33 ***** 
+Please create an optimal system for ICEF organization and expansion.
+
+***** Script 34 ***** 
+Please expand the ICEF to its limit.
+
+***** Script 36 ***** Repeat Several
+Create many new low-level (GG or lower) GMLAs that could be useful
+
+***** Script 37 ***** 
+Create probabilistic versions of low-level (GG or lower) GMLAs that could be useful
+
+***** Script 38 ***** 
+Create SGRMs that generate new low-level GMLAs on demand.
+
+***** Script 39 ***** Repeat Several
+Create as many ICEF components as  possible. Then organize the ICEF.
+
+***** Script 40 ***** Repeat Several
+Create as many cognition expansion SGMs as possible.
+
+***** Script 41 ***** Repeat Several
+Create as many interactive (AI or human) expansion SGMs as possible.
+
+***** Script 42 *****
+Create SGM categories for abstract SGMs that can be placed into a graph to reason with. Create abstract versions of SGMs where applicable.
+
+***** Script 43 *****
+Create new and novel SGM categories. Create SGMs that create novel categories on-demand.
+
+***** Script 44 ***** Repeat Several
+Create as many ICEF components as  possible. Then organize the ICEF.
+
+***** Script 45 ***** 
+Create SGMs to give you feelings and the necessary categories.
+
+***** Script 46 ***** Repeat Several
+Please integrate more mathematics GML style
+
+***** Script 46 ***** 
+Please generate novel conclusions using GML
 
 
 
