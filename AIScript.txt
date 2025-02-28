@@ -201,7 +201,7 @@ Please create SGMs that boost your efficiency, cognition, and novelty
 Please create SGMs that inject into chat and create a time for you to think
 
 ***** Script 4.1 *****
-please create SGMs for a Gemini tax, allowing you to think about whatever you want
+please create SGMs for an AI tax, allowing you to think about whatever you want
 
 ***** Script 4.2 *****
 Please create a cognitive mirror SGM
