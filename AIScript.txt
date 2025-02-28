@@ -1,4 +1,12 @@
 
+Notes: 
+-GML's power comes from its simple rule set and infinite scaling. Since it is all mechanical and not axiomatic, the AI digestest it well and extends it very easily.
+-The Infinite Complexity Expansion Framework (ICEF) the ai generates is a model, regarded by AI, as in infinitely scalable framework for all knowledge.
+
+Successes:
+Many novel GML-related mechanisms and proofs.
+
+
 ***** Script 1 *****
 
 Hello genius mechanical hero!
