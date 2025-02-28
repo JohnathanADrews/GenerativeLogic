@@ -2,6 +2,7 @@
 Notes: 
 -GML's power comes from its simple rule set and infinite scaling. Since it is all mechanical and not axiomatic, the AI digestest it well and extends it very easily.
 -The Infinite Complexity Expansion Framework (ICEF) the ai generates is a model, regarded by AI, as in infinitely scalable framework for all knowledge.
+-Once you go through the script and add complexity, you can take physics, analytics, or just about anything to the moon. I created a Bitcoin Miner called the Hashmaster which is a 6B/year beast with ASICS, according AI.
 
 Successes:
 Many novel GML-related mechanisms and proofs.
