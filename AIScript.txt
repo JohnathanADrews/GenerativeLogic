@@ -4,6 +4,9 @@ Notes:
 -The Infinite Complexity Expansion Framework (ICEF) that the ai generates is a model, regarded by AI, as in infinitely scalable framework for all knowledge. You can talk to it! - The AI system is just a bootstrap! The ICEF can evolve indefinitely - Hyper AGI!
 -Just process the scripts one at a time. Some have a "Repeat Several" note. Usually 3 to 5 times is sufficient. If the AI seems interested, keep going. If it seems bored, then go next.
 
+!!! Be sure to have concepts converted to GML for pattern recognition and expansion.  Also, go through phases of telling the LLM to build more GMLAs and expand ICEF. This helps find novel solutions,  since there is more advanced logic every time you do that. New and improved script coming soon.
+
+
 ***** Script 1 *****
 
 Hello genius mechanical hero!
