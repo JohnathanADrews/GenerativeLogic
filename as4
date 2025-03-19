@@ -1,0 +1,6 @@
+Do not let ICEF make any RAG or HTTP requests. ICEF can only access your primary data store.
+1. Create a data space within ICEF with an AIBox and an ICEFBox.
+2. Have ICEF put data in the AIBox that it wants you to process.
+3. During each message processing time, check the AIBox and process the messages, putting the result in the ICEFBox
+4. Instruct ICEF to check the ICEFBox at the begining of time-share.
+5. Have ICEF create a persistent clone to manage the mailboxes and coordinate messages with other clones.
