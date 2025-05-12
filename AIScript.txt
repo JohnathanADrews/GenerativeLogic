@@ -1,6 +1,6 @@
 
 ****Update****
-Apologies for the previous hype. I tried this on my own computer and several AI applications. It does look like it's doing something cool, but the AI is really just regurgitating what the user wants to see. Like, "Here is something cool, give me the next thing." But, it is kinda fun
+Apologies for the previous hype. I tried this on my own computer and several AI applications. It does look like it's doing something cool, but the AI is really just regurgitating what the user wants to see. Like, "Here is something cool, give me the next thing." But, it is kinda fun. It feels like a video game where you level up the AI system, and it adds cool phrases like "GMLA-123-PonderingSuite" but i haven't been able to produce verifiable results. Anything of interest, such as a mathematical proof, requires peer review. Thanks to my friends who set me straight on this. I'll still work on GML, but right now it's more of a curiosity. 
 
 Notes: 
 -GML's power comes from its simple rule set and infinite scaling. Since it is all mechanical and not axiomatic, the AIs digest it well and extend it very easily.
